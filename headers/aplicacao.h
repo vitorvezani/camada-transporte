@@ -19,10 +19,10 @@
 
 #define TAM_MAX_BUFFER 1400
 
-//DEFINIR X
+//DEFINIR pacote
 
-/* Estrutura do X */
-struct X {
+/* Estrutura do pacote */
+struct pacote {
     //DEFINIR
     int tam_buffer;
     char buffer[TAM_MAX_BUFFER];
@@ -34,14 +34,14 @@ struct buffer_apli_trans {
     int tam_buffer;
     int env_no;
     int retorno;
-    struct X data;
+    struct pacote data;
 };
 
 /* Estrutura do Segmento */
 struct segmento {
     //DEFINIR
     int tam_buffer;
-    struct X data;
+    struct pacote data;
 };
 
 /* Estrutura do arquivo */
@@ -59,10 +59,10 @@ extern pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
 extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
-void *enviarX();
-void *receberX();
+void *enviarPacotes();
+void *receberPacotes();
 
 //Funcoes
 
-void colocarXBufferApliTransEnv(struct X X);
-void retirarXBufferApliTransRcv(struct X *X);
+void colocarPacotesBufferApliTransEnv(struct pacote pacote);
+void retirarPacotesBufferApliTransRcv(struct pacote *pacote);

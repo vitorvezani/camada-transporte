@@ -52,8 +52,12 @@ extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 // Threads
 void *enviarSegmentos();
 void *receberSegmentos();
+void *enviarPacotes();
+void *receberPacotes();
 
 //Funcoes
 
 void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
+void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
+void colocarPacotesBufferApliTransEnv(struct pacote pacote);

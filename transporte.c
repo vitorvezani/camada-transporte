@@ -13,7 +13,7 @@
 void *iniciarTransporte() {
 
     int tes, trs, tea, tra;
-    pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarX, threadReceberX;
+    pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarPacotes, threadReceberPacotes;
 
     //Inicia a thread enviarDatagramas
     tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
@@ -32,43 +32,43 @@ void *iniciarTransporte() {
     }
 
     //Inicia a thread enviarDatagramas
-    tea = pthread_create(&threadEnviarX, NULL, enviarX, NULL);
+    tea = pthread_create(&threadEnviarPacotes, NULL, enviarPacotes, NULL);
 
     if (tea) {
-        printf("ERRO: impossivel criar a thread : enviarX\n");
+        printf("ERRO: impossivel criar a thread : enviarPacotes\n");
         exit(-1);
     }
 
     //Inicia a thread enviarDatagramas
-    tra = pthread_create(&threadReceberX, NULL, receberX, NULL);
+    tra = pthread_create(&threadReceberPacotes, NULL, receberPacotes, NULL);
 
     if (tra) {
-        printf("ERRO: impossivel criar a thread : receberX\n");
+        printf("ERRO: impossivel criar a thread : receberPacotes\n");
         exit(-1);
     }
 
     //Espera as threads terminarem
     pthread_join(threadEnviarSegmentos, NULL);
     pthread_join(threadReceberSegmentos, NULL);
-    pthread_join(threadEnviarX, NULL);
-    pthread_join(threadReceberX, NULL);
+    pthread_join(threadEnviarPacotes, NULL);
+    pthread_join(threadReceberPacotes, NULL);
 
 }
 
-void *enviarX() {
+void *enviarPacotes() {
 
     while (1) {
 
-        struct X X_env;
+        struct pacote pacote_env;
 
     }
 }
 
-void *receberX() {
+void *receberPacotes() {
 
     while (TRUE) {
 
-        struct X X_rcv;
+        struct pacote pacote_rcv;
 
     }
 
@@ -93,18 +93,18 @@ void *receberSegmentos() {
 
 }
 
-void colocarXBufferApliTransEnv(struct X X){
+void colocarPacotesBufferApliTransEnv(struct pacote pacote){
 
     //Colocar no Buffer
-    buffer_trans_rede_env.tam_buffer = X.tam_buffer;
-    memcpy(&buffer_trans_rede_env.data, &X, sizeof (X));
+    buffer_trans_rede_env.tam_buffer = pacote.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &pacote, sizeof (pacote));
 
 }
 
-void retirarXBufferApliTransRcv(struct X *X) {
+void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 
-    X->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
-    strcpy(X->buffer, buffer_trans_rede_rcv.data.buffer);
+    pacote->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    strcpy(pacote->buffer, buffer_trans_rede_rcv.data.buffer);
 
 }
 

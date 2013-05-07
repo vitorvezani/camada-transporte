@@ -13,38 +13,38 @@
 void *iniciarAplicacao() {
 
     int te, tr;
-    pthread_t threadEnviarX, threadReceberX;
+    pthread_t threadEnviarPacotes, threadReceberPacotes;
 
     //Inicia a thread enviarDatagramas
-    te = pthread_create(&threadEnviarX, NULL, enviarX, NULL);
+    te = pthread_create(&threadEnviarPacotes, NULL, enviarPacotes, NULL);
 
     if (te) {
-        printf("ERRO: impossivel criar a thread : enviarX\n");
+        printf("ERRO: impossivel criar a thread : enviarPacotes\n");
         exit(-1);
     }
 
     //Inicia a thread enviarDatagramas
-    tr = pthread_create(&threadReceberX, NULL, receberX, NULL);
+    tr = pthread_create(&threadReceberPacotes, NULL, receberPacotes, NULL);
 
     if (tr) {
-        printf("ERRO: impossivel criar a thread : receberX\n");
+        printf("ERRO: impossivel criar a thread : receberPacotes\n");
         exit(-1);
     }
 
     //Espera as threads terminarem
-    pthread_join(threadEnviarX, NULL);
-    pthread_join(threadReceberX, NULL);
+    pthread_join(threadEnviarPacotes, NULL);
+    pthread_join(threadReceberPacotes, NULL);
 
 }
 
-void *enviarX() {
+void *enviarPacotes() {
 
     char dados_aux[128];
     char *pch;
 
     while (1) {
 
-        struct X X_env;
+        struct pacote pacote_env;
 
         //Pega os Dados digitado pelo usuario
         printf("[APLIC - ENVIAR] Digite nó e data: ");
@@ -64,14 +64,14 @@ void *enviarX() {
 
             pch = strtok(NULL, "");
 
-            strcpy(X_env.buffer, pch);
+            strcpy(pacote_env.buffer, pch);
 
             //Seta tipo de msg, tamanho da msg e nó para enviar
-            X_env.tam_buffer = strlen(X_env.buffer);
+            pacote_env.tam_buffer = strlen(pacote_env.buffer);
 
             //Colocar no Buffer
-            buffer_apli_trans_env.tam_buffer = X_env.tam_buffer;
-            memcpy(&buffer_apli_trans_env.data, &X_env, sizeof (X_env));
+            buffer_apli_trans_env.tam_buffer = pacote_env.tam_buffer;
+            memcpy(&buffer_apli_trans_env.data, &pacote_env, sizeof (pacote_env));
 
             //Destrava mutex de sincronismo
             pthread_mutex_unlock(&mutex_apli_trans_env2);
@@ -97,21 +97,21 @@ void *enviarX() {
     }
 }
 
-void *receberX() {
+void *receberPacotes() {
 
     while (TRUE) {
 
-        struct X X_rcv;
+        struct pacote pacote_rcv;
 
         //Trava mutex de sincronismo
         pthread_mutex_lock(&mutex_apli_trans_rcv2);
 
         if (buffer_apli_trans_rcv.tam_buffer != -1) {
 
-            montarSegmento(&X_rcv);
+            montarSegmento(&pacote_rcv);
 
-            printf("[APLIC - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", X_rcv.tam_buffer,
-                    X_rcv.buffer);
+            printf("[APLIC - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", pacote_rcv.tam_buffer,
+                    pacote_rcv.buffer);
 
         }
 
@@ -121,9 +121,9 @@ void *receberX() {
 
 }
 
-void montarSegmento(struct X *X) {
+void montarSegmento(struct pacote *pacote) {
 
-    X->tam_buffer = buffer_apli_trans_rcv.data.tam_buffer;
-    strcpy(X->buffer, buffer_apli_trans_rcv.data.buffer);
+    pacote->tam_buffer = buffer_apli_trans_rcv.data.tam_buffer;
+    strcpy(pacote->buffer, buffer_apli_trans_rcv.data.buffer);
 
 }
