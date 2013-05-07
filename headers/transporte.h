@@ -19,6 +19,28 @@
 
 #define TAM_MAX_BUFFER 1400
 
+/* Estrutura do pacote */
+struct pacote {
+    //DEFINIR
+    int tam_buffer;
+    char buffer[TAM_MAX_BUFFER];
+};
+
+/* Estrutura do buffer entre a camada de aplicacao e transporte*/
+struct buffer_apli_trans {
+    int tipo;
+    int tam_buffer;
+    int env_no;
+    int retorno;
+    struct pacote data;
+};
+
+typedef struct buffer_trans_trans{
+    int index;
+  	struct pacote data;
+    struct buffer_trans_trans *prox;
+}buffer_trans_trans_env;
+
 /* Estrutura do Segmento */
 struct segmento {
     int tam_buffer;
@@ -39,9 +61,10 @@ struct file {
     int num_no;
 };
 
-// Variaveis Globais à Camada de Rede e Main
+// Variaveis Globais à Camada de Transporte e Main
 
 extern struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
+extern struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
 extern struct file file_info;
 
 extern pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2;
@@ -49,15 +72,17 @@ extern pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2;
 extern pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
 extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
+// Variaveis Globais à Camada de Transporte
+
 // Threads
 void *enviarSegmentos();
 void *receberSegmentos();
-void *enviarPacotes();
-void *receberPacotes();
+void *enviarPacote();
+void *receberPacote();
 
 //Funcoes
 
-void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
-void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
-void colocarPacotesBufferApliTransEnv(struct pacote pacote);
+void retirarPacoteBufferApliTransEnv(struct pacote *pacote);
+void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
+void colocarPacoteBufferApliTransRcv(struct pacote pacote);

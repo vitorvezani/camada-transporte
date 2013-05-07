@@ -69,9 +69,7 @@ void *enviarPacotes() {
             //Seta tipo de msg, tamanho da msg e nó para enviar
             pacote_env.tam_buffer = strlen(pacote_env.buffer);
 
-            //Colocar no Buffer
-            buffer_apli_trans_env.tam_buffer = pacote_env.tam_buffer;
-            memcpy(&buffer_apli_trans_env.data, &pacote_env, sizeof (pacote_env));
+            colocarPacotesBufferApliTransEnv(pacote_env);
 
             //Destrava mutex de sincronismo
             pthread_mutex_unlock(&mutex_apli_trans_env2);
@@ -108,11 +106,10 @@ void *receberPacotes() {
 
         if (buffer_apli_trans_rcv.tam_buffer != -1) {
 
-            montarSegmento(&pacote_rcv);
+            retirarPacotesBufferApliTransRcv(&pacote_rcv);
 
             printf("[APLIC - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", pacote_rcv.tam_buffer,
                     pacote_rcv.buffer);
-
         }
 
         //Destrava mutex de sinconismo
@@ -121,9 +118,41 @@ void *receberPacotes() {
 
 }
 
-void montarSegmento(struct pacote *pacote) {
+void colocarPacotesBufferApliTransEnv(struct pacote pacote){
+
+    //Colocar no Buffer
+    buffer_apli_trans_env.tam_buffer = pacote.tam_buffer;
+    memcpy(&buffer_apli_trans_env.data, &pacote, sizeof (pacote));
+
+}
+
+void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 
     pacote->tam_buffer = buffer_apli_trans_rcv.data.tam_buffer;
     strcpy(pacote->buffer, buffer_apli_trans_rcv.data.buffer);
+
+}
+
+int aps(){
+    int ips;
+
+   return ips;
+}
+int fps(){
+
+    return 1;
+}
+int conectar(int env_no, int ips){
+    int ic;
+
+
+    return ic;
+}
+int desconectar(int ic){
+
+    return 1;
+}
+
+void baixar(int ic, void *arq){
 
 }

@@ -19,8 +19,6 @@
 
 #define TAM_MAX_BUFFER 1400
 
-//DEFINIR pacote
-
 /* Estrutura do pacote */
 struct pacote {
     //DEFINIR
@@ -28,9 +26,9 @@ struct pacote {
     char buffer[TAM_MAX_BUFFER];
 };
 
-/* Estrutura do buffer entre a camada de aplicacao e transporte*/
+/* Estrutura do buffer entre a camada de aplicacao e transporte */
 struct buffer_apli_trans {
-    //DEFINIR
+    int tipo;
     int tam_buffer;
     int env_no;
     int retorno;
@@ -50,7 +48,7 @@ struct file {
     int num_no;
 };
 
-// Variaveis Globais à Camada de Rede e Main
+// Variaveis Globais à Camada de Aplicacao e a Main
 
 extern struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
 extern struct file file_info;
@@ -62,7 +60,16 @@ extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 void *enviarPacotes();
 void *receberPacotes();
 
-//Funcoes
+// Funcoes
 
 void colocarPacotesBufferApliTransEnv(struct pacote pacote);
 void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
+
+//Funcoes API da camada de aplicacao
+
+int aps();
+int fps();
+int conectar(int env_no, int ips);
+int desconectar(int ic);
+//
+void baixar(int ic, void *arq);

@@ -16,6 +16,21 @@
 // Defines
 #define TAM_MAX_BUFFER 1400
 
+/* Estrutura do pacote */
+struct pacote {
+    //DEFINIR
+    int tam_buffer;
+    char buffer[TAM_MAX_BUFFER];
+};
+
+struct buffer_apli_trans {
+    int tipo;
+    int tam_buffer;
+    int env_no;
+    int retorno;
+    struct pacote data;
+};
+
 /* Estrutura da tabela de rotas */
 struct tabela_rotas{
     int destino;
@@ -72,6 +87,7 @@ struct file {
 
 // Variaveis Globais
 
+struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
 struct buffer_rede_enlace buffer_rede_enlace_env, buffer_rede_enlace_rcv;
 struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
 
