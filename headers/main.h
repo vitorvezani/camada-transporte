@@ -79,17 +79,20 @@ struct file file_info;
 
 struct ligacoes ligacao;
 
-pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2,mutex_rede_enlace_env3;
-pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2,mutex_rede_enlace_rcv3;
+pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
+pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
 pthread_mutex_t mutex_rede_rede_atualizei1, mutex_rede_rede_atualizei2;
 pthread_mutex_t mutex_rede_rede_receberotas2;
-pthread_mutex_t mutex_rede_rede_env1, mutex_rede_rede_env2,mutex_rede_rede_env3;
-pthread_mutex_t mutex_rede_rede_rcv1, mutex_rede_rede_rcv2,mutex_rede_rede_rcv3;
-pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2,mutex_trans_rede_env3;
-pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2,mutex_trans_rede_rcv3;
+pthread_mutex_t mutex_rede_rede_env1, mutex_rede_rede_env2;
+pthread_mutex_t mutex_rede_rede_rcv1, mutex_rede_rede_rcv2;
+pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2;
+pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2;
+pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
+pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
 
-void *iniciarTransporte();
 void *iniciarEnlace();
 void *iniciarRede();
+void *iniciarTransporte();
+void *iniciarAplicacao();

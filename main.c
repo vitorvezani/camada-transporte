@@ -13,8 +13,8 @@
 
 int main(int argc, char const *argv[]) {
     int i, j;
-    int te, tr, ttr;
-    pthread_t threadIniciaEnlace, threadIniciaRede, threadIniciaTransporte;
+    int te, tr, ttr, tap;
+    pthread_t threadIniciaEnlace, threadIniciaRede, threadIniciaTransporte, threadIniciaAplicacao;
 
     /* Testa Parametros */
     if (argc != 3) {
@@ -28,36 +28,37 @@ int main(int argc, char const *argv[]) {
 
     printf("Nome do arquivo: '%s'\n Numero nó: '%d'\n", file_info.file_name, file_info.num_no);
 
-    /* Inicializar Mutex Rede->Enlace Enviar */
+    /* Inicializar Mutex Sincronismo Rede->Enlace Enviar */
     pthread_mutex_init(&mutex_rede_enlace_env1, NULL);
     pthread_mutex_init(&mutex_rede_enlace_env2, NULL);
-    pthread_mutex_init(&mutex_rede_enlace_env3, NULL);
-    /* Inicializar Mutex Rede->Enlace Receber */
+    /* Inicializar Mutex Sincronismo Rede->Enlace Receber */
     pthread_mutex_init(&mutex_rede_enlace_rcv1, NULL);
     pthread_mutex_init(&mutex_rede_enlace_rcv2, NULL);
-    pthread_mutex_init(&mutex_rede_enlace_rcv3, NULL);
-    /* Inicializar Mutex Rede->Rede Enviar */
+    /* Inicializar Mutex Sincronismo Rede->Rede Enviar */
     pthread_mutex_init(&mutex_rede_rede_env1, NULL);
     pthread_mutex_init(&mutex_rede_rede_env2, NULL);
-    pthread_mutex_init(&mutex_rede_rede_env3, NULL);
-    /* Inicializar Mutex Rede->Rede Receber */
+    /* Inicializar Mutex Sincronismo Rede->Rede Receber */
     pthread_mutex_init(&mutex_rede_rede_rcv1, NULL);
     pthread_mutex_init(&mutex_rede_rede_rcv2, NULL);
+    /* Inicializar Mutex Sincronismo Recebe Rotas */
     pthread_mutex_init(&mutex_rede_rede_receberotas2, NULL);
-    pthread_mutex_init(&mutex_rede_rede_rcv3, NULL);
-    /* Inicializar Mutex Rede->Rede Atualizei */
+    /* Inicializar Mutex Sincronismo Rede->Rede Atualizei */
     pthread_mutex_init(&mutex_rede_rede_atualizei1, NULL);
     pthread_mutex_init(&mutex_rede_rede_atualizei2, NULL);
-    /* Inicializar Mutex Trans->Rede Enviar */
+    /* Inicializar Mutex Sincronismo Trans->Rede Enviar */
     pthread_mutex_init(&mutex_trans_rede_env1, NULL);
     pthread_mutex_init(&mutex_trans_rede_env2, NULL);
-    pthread_mutex_init(&mutex_trans_rede_env3, NULL);
-    /* Inicializar Mutex Trans->Rede Receber */
+    /* Inicializar Mutex Sincronismo Trans->Rede Receber */
     pthread_mutex_init(&mutex_trans_rede_rcv1, NULL);
     pthread_mutex_init(&mutex_trans_rede_rcv2, NULL);
-    pthread_mutex_init(&mutex_trans_rede_rcv3, NULL);
+    /* Inicializar Mutex Sincronismo Apli_Trans Enviar */
+    pthread_mutex_init(&mutex_apli_trans_env1, NULL);
+    pthread_mutex_init(&mutex_apli_trans_env2, NULL);
+    /* Inicializar Mutex Sincronismo Apli_Trans Receber */
+    pthread_mutex_init(&mutex_apli_trans_rcv1, NULL);
+    pthread_mutex_init(&mutex_apli_trans_rcv2, NULL);
 
-    //Inicialização de Mutex Consumidores
+    /* Inicialização de Mutex Consumidores */
     pthread_mutex_lock(&mutex_rede_rede_receberotas2);
     pthread_mutex_lock(&mutex_rede_rede_atualizei2);
     pthread_mutex_lock(&mutex_rede_enlace_rcv2);
@@ -66,6 +67,8 @@ int main(int argc, char const *argv[]) {
     pthread_mutex_lock(&mutex_rede_rede_env2);
     pthread_mutex_lock(&mutex_trans_rede_env2);
     pthread_mutex_lock(&mutex_trans_rede_rcv2);
+    pthread_mutex_lock(&mutex_apli_trans_env2);
+    pthread_mutex_lock(&mutex_apli_trans_rcv2);
 
     /* Inicializacao das estrutura ligacao */
     for (i = 0; i < 18; ++i)
@@ -104,39 +107,42 @@ int main(int argc, char const *argv[]) {
         exit(-1);
     }
 
+    usleep(15000);
+
+    /* Inicia a thread iniciarTransporte */
+    tap = pthread_create(&threadIniciaAplicacao, NULL, iniciarAplicacao, NULL);
+
+    if (tap) {
+        printf("ERRO: impossivel criar a thread : iniciarAplicacao\n");
+        exit(-1);
+    }
+
     /* Espera as threads terminarem */
     pthread_join(threadIniciaEnlace, NULL);
     pthread_join(threadIniciaRede, NULL);
     pthread_join(threadIniciaTransporte, NULL);
+    pthread_join(threadIniciaAplicacao, NULL);
 
-    /* Destroi o Mutex Rede->Enlace env */
+    /* Destroi Mutex */
     pthread_mutex_destroy(&mutex_rede_enlace_env1);
     pthread_mutex_destroy(&mutex_rede_enlace_env2);
-    pthread_mutex_destroy(&mutex_rede_enlace_env3);
-    /* Destroi o Mutex Rede->Enlace rcv */
     pthread_mutex_destroy(&mutex_rede_enlace_rcv1);
     pthread_mutex_destroy(&mutex_rede_enlace_rcv2);
-    pthread_mutex_destroy(&mutex_rede_enlace_rcv3);
-    /* Destroi o Mutex Rede->Rede Atualizei */
     pthread_mutex_destroy(&mutex_rede_rede_atualizei1);
     pthread_mutex_destroy(&mutex_rede_rede_atualizei2);
-    /* Destroi o Mutex Rede->Rede env */
     pthread_mutex_destroy(&mutex_rede_rede_env1);
     pthread_mutex_destroy(&mutex_rede_rede_env2);
-    pthread_mutex_destroy(&mutex_rede_rede_env3);
-    /* Destroi o Mutex Rede->Rede rcv */
     pthread_mutex_destroy(&mutex_rede_rede_receberotas2);
     pthread_mutex_destroy(&mutex_rede_rede_rcv1);
     pthread_mutex_destroy(&mutex_rede_rede_rcv2);
-    pthread_mutex_destroy(&mutex_rede_rede_rcv3);
-    /* Destroi o Mutex Trans->Rede env */
     pthread_mutex_destroy(&mutex_trans_rede_env1);
     pthread_mutex_destroy(&mutex_trans_rede_env2);
-    pthread_mutex_destroy(&mutex_trans_rede_env3);
-    /* Destroi o Mutex Trans->Rede rcv */
     pthread_mutex_destroy(&mutex_trans_rede_rcv1);
     pthread_mutex_destroy(&mutex_trans_rede_rcv2);
-    pthread_mutex_destroy(&mutex_trans_rede_rcv3);
+    pthread_mutex_destroy(&mutex_trans_rede_env1);
+    pthread_mutex_destroy(&mutex_trans_rede_env2);
+    pthread_mutex_destroy(&mutex_trans_rede_rcv1);
+    pthread_mutex_destroy(&mutex_trans_rede_rcv2);
 
     return 0;
 }

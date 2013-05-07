@@ -12,88 +12,74 @@
 
 void *iniciarTransporte() {
 
-    int te, tr;
-    pthread_t threadEnviarSegmentos, threadReceberSegmentos;
+    int tes, trs, tea, tra;
+    pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarX, threadReceberX;
 
     //Inicia a thread enviarDatagramas
-    te = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
+    tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
 
-    if (te) {
+    if (tes) {
         printf("ERRO: impossivel criar a thread : enviarSegmentos\n");
         exit(-1);
     }
 
     //Inicia a thread enviarDatagramas
-    tr = pthread_create(&threadReceberSegmentos, NULL, receberSegmentos, NULL);
+    trs = pthread_create(&threadReceberSegmentos, NULL, receberSegmentos, NULL);
 
-    if (tr) {
+    if (trs) {
         printf("ERRO: impossivel criar a thread : receberSegmentos\n");
+        exit(-1);
+    }
+
+    //Inicia a thread enviarDatagramas
+    tea = pthread_create(&threadEnviarX, NULL, enviarX, NULL);
+
+    if (tea) {
+        printf("ERRO: impossivel criar a thread : enviarX\n");
+        exit(-1);
+    }
+
+    //Inicia a thread enviarDatagramas
+    tra = pthread_create(&threadReceberX, NULL, receberX, NULL);
+
+    if (tra) {
+        printf("ERRO: impossivel criar a thread : receberX\n");
         exit(-1);
     }
 
     //Espera as threads terminarem
     pthread_join(threadEnviarSegmentos, NULL);
     pthread_join(threadReceberSegmentos, NULL);
+    pthread_join(threadEnviarX, NULL);
+    pthread_join(threadReceberX, NULL);
+
+}
+
+void *enviarX() {
+
+    while (1) {
+
+        struct X X_env;
+
+    }
+}
+
+void *receberX() {
+
+    while (TRUE) {
+
+        struct X X_rcv;
+
+    }
 
 }
 
 void *enviarSegmentos() {
 
-    char dados_aux[128];
-    char *pch;
-
     while (1) {
 
         struct segmento segmento_env;
 
-        //Pega os Dados digitado pelo usuario
-        printf("[TRANS - ENVIAR] Digite nó e data: ");
-        fflush(stdout);
-        fpurge(stdin);
-        fgets(dados_aux, 127, stdin);
-        dados_aux[strlen(dados_aux) - 1] = '\0';
-
-        if (isdigit(dados_aux[0])) {
-
-            //Trava o Mutex de sincronismo
-            pthread_mutex_lock(&mutex_trans_rede_env1);
-
-            pch = strtok(dados_aux, " ");
-
-            buffer_trans_rede_env.env_no = atoi(pch);
-
-            pch = strtok(NULL, "");
-
-            strcpy(segmento_env.buffer, pch);
-
-            //Seta tipo de msg, tamanho da msg e nó para enviar
-            segmento_env.tam_buffer = strlen(segmento_env.buffer);
-
-            //Colocar no Buffer
-            buffer_trans_rede_env.tam_buffer = segmento_env.tam_buffer;
-            memcpy(&buffer_trans_rede_env.data, &segmento_env, sizeof (segmento_env));
-
-            //Destrava mutex de sincronismo
-            pthread_mutex_unlock(&mutex_trans_rede_env2);
-
-        } else
-            printf("[TRANS - ENVIAR] data[0] :'%c' não é um int\n", dados_aux[0]);
-
-        // TESTE DE RETORNO DA CAMADA DE REDE
-        /*
-        pthread_mutex_lock(&mutex_trans_rede_env1);
-
-        //Testa o retorno da camada de enlace
-        if (buffer_trans_rede_env.retorno == 0) {
-            printf("Transporte.c (Enviar - Retorno) = > OK\n\n");
-        } else if (buffer_trans_rede_env.retorno == -1) {
-            printf("Transporte.c (Enviar - Retorno) = > Não é nó vizinho: '%d'!\n\n", buffer_trans_rede_env.env_no);
-        }else {
-            printf("Transporte.c (Enviar - Retorno) = > Erro fatal(2)\n\n");
-        }
-
-        pthread_mutex_unlock(&mutex_trans_rede_env1);
-         */
     }
 }
 
@@ -103,25 +89,34 @@ void *receberSegmentos() {
 
         struct segmento segmento_rcv;
 
-        //Trava mutex de sincronismo
-        pthread_mutex_lock(&mutex_trans_rede_rcv2);
-
-        if (buffer_trans_rede_rcv.tam_buffer != -1) {
-
-            montarSegmento(&segmento_rcv);
-
-            printf("[TRANS - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", segmento_rcv.tam_buffer,
-                    segmento_rcv.buffer);
-
-        }
-
-        //Destrava mutex de sinconismo
-        pthread_mutex_unlock(&mutex_trans_rede_rcv1);
     }
 
 }
 
-void montarSegmento(struct segmento *segment) {
+void colocarXBufferApliTransEnv(struct X X){
+
+    //Colocar no Buffer
+    buffer_trans_rede_env.tam_buffer = X.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &X, sizeof (X));
+
+}
+
+void retirarXBufferApliTransRcv(struct X *X) {
+
+    X->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    strcpy(X->buffer, buffer_trans_rede_rcv.data.buffer);
+
+}
+
+void colocarSegmentoBufferTransRedeEnv(struct segmento segment){
+
+    //Colocar no Buffer
+    buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
+
+}
+
+void retirarSegmentoBufferTransRedeRcv(struct segmento *segment) {
 
     segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
     strcpy(segment->buffer, buffer_trans_rede_rcv.data.buffer);

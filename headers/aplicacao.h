@@ -19,30 +19,29 @@
 
 #define TAM_MAX_BUFFER 1400
 
-/* Estrutura do Segmento */
-struct segmento {
+//DEFINIR X
+
+/* Estrutura do X */
+struct X {
+    //DEFINIR
     int tam_buffer;
     char buffer[TAM_MAX_BUFFER];
 };
 
-/* Estrutura do buffer entre a camada de transporte e rede*/
-struct buffer_trans_rede {
+/* Estrutura do buffer entre a camada de aplicacao e transporte*/
+struct buffer_apli_trans {
+    //DEFINIR
     int tam_buffer;
     int env_no;
     int retorno;
-    struct segmento data;
+    struct X data;
 };
 
-/* Estrutura do datagrama */
-struct datagrama {
+/* Estrutura do Segmento */
+struct segmento {
+    //DEFINIR
     int tam_buffer;
-    int offset;
-    int id;
-    int tamanho_total;
-    int mf;
-    int type;
-    int env_no;
-    struct segmento data;
+    struct X data;
 };
 
 /* Estrutura do arquivo */
@@ -53,16 +52,17 @@ struct file {
 
 // Variaveis Globais à Camada de Rede e Main
 
-extern struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
+extern struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
 extern struct file file_info;
 
-extern pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2, mutex_trans_rede_env3;
-extern pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2, mutex_trans_rede_rcv3;
+extern pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
+extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
-void *enviarSegmentos();
-void *receberSegmentos();
+void *enviarX();
+void *receberX();
 
 //Funcoes
 
-void montarSegmento(struct segmento *segment);
+void colocarXBufferApliTransEnv(struct X X);
+void retirarXBufferApliTransRcv(struct X *X);

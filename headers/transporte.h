@@ -33,18 +33,6 @@ struct buffer_trans_rede {
     struct segmento data;
 };
 
-/* Estrutura do datagrama */
-struct datagrama {
-    int tam_buffer;
-    int offset;
-    int id;
-    int tamanho_total;
-    int mf;
-    int type;
-    int env_no;
-    struct segmento data;
-};
-
 /* Estrutura do arquivo */
 struct file {
     char file_name[20];
@@ -56,8 +44,10 @@ struct file {
 extern struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
 extern struct file file_info;
 
-extern pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2, mutex_trans_rede_env3;
-extern pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2, mutex_trans_rede_rcv3;
+extern pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2;
+extern pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2;
+extern pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
+extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
 void *enviarSegmentos();
@@ -65,4 +55,5 @@ void *receberSegmentos();
 
 //Funcoes
 
-void montarSegmento(struct segmento *segment);
+void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
+void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
