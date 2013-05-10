@@ -9,8 +9,7 @@
 #
 
 all:
-	gcc -c main.c arquivo.c enlace.c rede.c transporte.c garbler.c aplicacao.c
-	gcc -o meuprog main.o enlace.o rede.o transporte.o arquivo.o garbler.o aplicacao.o
-	gcc -o teste teste.c
+	gcc -c inicializador.c arquivo.c enlace.c rede.c transporte.c garbler.c aplicacao.c meuprog.c
+	gcc -o inicializador.o enlace.o rede.o transporte.o arquivo.o garbler.o aplicacao.o
 clean:
 	rm -f .o

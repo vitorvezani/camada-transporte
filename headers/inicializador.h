@@ -1,5 +1,5 @@
 //
-//  main.h
+//  inicializador.h
 //
 //  Guilherme Sividal - 09054512
 //  Vitor Rodrigo Vezani - 10159861
@@ -108,6 +108,7 @@ pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
 
+void *inicializarCamadas();
 void *iniciarEnlace();
 void *iniciarRede();
 void *iniciarTransporte();

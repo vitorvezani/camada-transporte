@@ -71,5 +71,4 @@ int aps();
 int fps();
 int conectar(int env_no, int ips);
 int desconectar(int ic);
-//
 void baixar(int ic, void *arq);

@@ -46,52 +46,6 @@ void *enviarPacotes() {
 
         struct pacote pacote_env;
 
-        //Pega os Dados digitado pelo usuario
-        printf("[APLIC - ENVIAR] Digite nó e data: ");
-        fflush(stdout);
-        fpurge(stdin);
-        fgets(dados_aux, 127, stdin);
-        dados_aux[strlen(dados_aux) - 1] = '\0';
-
-        if (isdigit(dados_aux[0])) {
-
-            //Trava o Mutex de sincronismo
-            pthread_mutex_lock(&mutex_apli_trans_env1);
-
-            pch = strtok(dados_aux, " ");
-
-            buffer_apli_trans_env.env_no = atoi(pch);
-
-            pch = strtok(NULL, "");
-
-            strcpy(pacote_env.buffer, pch);
-
-            //Seta tipo de msg, tamanho da msg e nó para enviar
-            pacote_env.tam_buffer = strlen(pacote_env.buffer);
-
-            colocarPacotesBufferApliTransEnv(pacote_env);
-
-            //Destrava mutex de sincronismo
-            pthread_mutex_unlock(&mutex_apli_trans_env2);
-
-        } else
-            printf("[APLIC - ENVIAR] data[0] :'%c' não é um int\n", dados_aux[0]);
-
-        // TESTE DE RETORNO DA CAMADA DE REDE
-        /*
-        pthread_mutex_lock(&mutex_apli_trans_env1);
-
-        //Testa o retorno da camada de enlace
-        if (buffer_apli_trans_env.retorno == 0) {
-            printf("[APLICACAO - Retorno] ok\n\n");
-        } else if (buffer_apli_trans_env.retorno == -1) {
-            printf("[APLICACAO - Retorno] não é nó vizinho: '%d'!\n\n", buffer_apli_trans_env.env_no);
-        }else {
-            printf("[APLICACAO - Retorno] erro fatal(2)\n\n");
-        }
-
-        pthread_mutex_unlock(&mutex_apli_trans_env1);
-         */
     }
 }
 
@@ -136,23 +90,57 @@ void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 int aps(){
     int ips;
 
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
+
    return ips;
 }
 int fps(){
+
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
 
     return 1;
 }
 int conectar(int env_no, int ips){
     int ic;
 
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
 
     return ic;
 }
 int desconectar(int ic){
+
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
 
     return 1;
 }
 
 void baixar(int ic, void *arq){
 
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
+    
 }

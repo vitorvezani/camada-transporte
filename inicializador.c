@@ -1,5 +1,5 @@
 //
-//  main.c
+//  inicializador.c
 //
 //  Guilherme Sividal - 09054512
 //  Vitor Rodrigo Vezani - 10159861
@@ -8,25 +8,14 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/main.h"
+#include "headers/inicializador.h"
 #include "headers/arquivo.h"
 
-int main(int argc, char const *argv[]) {
+void *inicializarCamadas() {
+
     int i, j;
     int te, tr, ttr, tap;
     pthread_t threadIniciaEnlace, threadIniciaRede, threadIniciaTransporte, threadIniciaAplicacao;
-
-    /* Testa Parametros */
-    if (argc != 3) {
-        printf("Use: %s 'file_name.ini' 'numero_nó'\n", argv[0]);
-        exit(1);
-    }
-
-    /* Copia para as Variaveis */
-    strcpy(file_info.file_name, argv[1]);
-    file_info.num_no = atoi(argv[2]);
-
-    printf("Nome do arquivo: '%s'\n Numero nó: '%d'\n", file_info.file_name, file_info.num_no);
 
     /* Inicializar Mutex Sincronismo Rede->Enlace Enviar */
     pthread_mutex_init(&mutex_rede_enlace_env1, NULL);
@@ -87,7 +76,7 @@ int main(int argc, char const *argv[]) {
         exit(-1);
     }
 
-    usleep(15000);
+    usleep(1000);
 
     /* Inicia a thread iniciarRede */
     tr = pthread_create(&threadIniciaRede, NULL, iniciarRede, NULL);
@@ -97,7 +86,7 @@ int main(int argc, char const *argv[]) {
         exit(-1);
     }
 
-    usleep(15000);
+    usleep(1000);
 
     /* Inicia a thread iniciarTransporte */
     ttr = pthread_create(&threadIniciaTransporte, NULL, iniciarTransporte, NULL);
@@ -107,7 +96,7 @@ int main(int argc, char const *argv[]) {
         exit(-1);
     }
 
-    usleep(15000);
+    usleep(1000);
 
     /* Inicia a thread iniciarTransporte */
     tap = pthread_create(&threadIniciaAplicacao, NULL, iniciarAplicacao, NULL);
