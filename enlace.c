@@ -9,7 +9,7 @@
 //
 
 #include "headers/arquivo.h"
-#include "headers/enlace.h"
+#include "headers/globals.h"
 
 void *iniciarEnlace() {
 

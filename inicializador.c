@@ -8,7 +8,7 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/inicializador.h"
+#include "headers/globals.h"
 #include "headers/arquivo.h"
 
 void *inicializarCamadas() {

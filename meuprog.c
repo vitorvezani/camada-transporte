@@ -10,17 +10,20 @@
 
 #define TRUE    1
 
-#include "headers/inicializacao.h"
+#include "headers/globals.h"
 #include "headers/arquivo.h"
 
 int main(int argc, char const *argv[]) {
+
     int tic;
+    char dados_aux[128];
+    char *pch;
     pthread_t threadinicializarCamadas;
 
-    int oper,no_dst;
+    int oper, no_dst;
     char buffer[50];
 
-    int ic;
+    int ic,ips;
     char *arq;
 
     int socket;
@@ -52,7 +55,7 @@ int main(int argc, char const *argv[]) {
     //pthread_detach(threadinicializarCamadas);
 
     //Pega os Dados digitado pelo usuario
-    while(TRUE){
+    while(oper != 6){
 
         printf("[MEUPROG]1- aps, 2-fps, 3-conectar, 4-desconectar, 5-baixar, 6-sair\n");
         printf("[MEUPROG] oper, nó, data: ");
@@ -79,18 +82,27 @@ int main(int argc, char const *argv[]) {
                 case 1:
                     ips = aps();
                 break;
+
                 case 2:
                     fps();
                 break;
+
                 case 3:
                     ic = conectar(no_dst, ips);
                 break;
+
                 case 4:
                     desconectar(ic);
                 break;
+
                 case 5:
-                    baixar(ic);
+                    baixar(ic, arq);
                 break;
+
+                case 6:
+                    printf("Sair da aplicacao\n");
+                break;
+
                 default:
                     printf("Opção inválida!\n");
             }

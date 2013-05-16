@@ -57,6 +57,7 @@ extern pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
 extern pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 // Threads
+
 void *enviarPacotes();
 void *receberPacotes();
 

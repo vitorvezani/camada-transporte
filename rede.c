@@ -9,7 +9,7 @@
 //
 
 #include "headers/arquivo.h"
-#include "headers/rede.h"
+#include "headers/globals.h"
 
 void *iniciarRede() {
 

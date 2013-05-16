@@ -8,7 +8,7 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/transporte.h"
+#include "headers/globals.h"
 
 void *iniciarTransporte() {
 
