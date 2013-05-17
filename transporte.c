@@ -1,7 +1,7 @@
 //
 //  transporte.c
 //
-//  Guilherme Sividal - 09054512
+//  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 07/04/13.
@@ -15,7 +15,7 @@ void *iniciarTransporte() {
     int tes, trs, tea, tra;
     pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarPacote, threadReceberPacote;
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarSegmentos
     tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
 
     if (tes) {
@@ -23,7 +23,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarSegmentos
     trs = pthread_create(&threadReceberSegmentos, NULL, receberSegmentos, NULL);
 
     if (trs) {
@@ -31,7 +31,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarPacote
     tea = pthread_create(&threadEnviarPacote, NULL, enviarPacote, NULL);
 
     if (tea) {
@@ -39,7 +39,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarPacote
     tra = pthread_create(&threadReceberPacote, NULL, receberPacote, NULL);
 
     if (tra) {
@@ -59,7 +59,25 @@ void *enviarPacote() {
 
     while (TRUE) {
 
-        struct pacote pacote_env;
+        struct pacote pacote_rcv;
+
+        /* Consumir buffer_trans_trans_rcv */
+        pthread_mutex_lock(&mutex_trans_trans_rcv2);
+
+        retirarPacoteBufferTransTransRcv(&pacote_rcv);
+
+        /* Consumir buffer_trans_trans_rcv */
+        pthread_mutex_unlock(&mutex_trans_trans_rcv1);
+
+        //TODO
+
+        /* Produzir buffer_apli_trans_rcv */
+        pthread_mutex_lock(&mutex_apli_trans_rcv1);
+
+        colocarPacoteBufferApliTransRcv(pacote_rcv);
+
+        /* Produzir buffer_apli_trans_rcv */
+        pthread_mutex_unlock(&mutex_apli_trans_rcv2);
 
     }
 }
@@ -68,7 +86,25 @@ void *receberPacote() {
 
     while (TRUE) {
 
-        struct pacote pacote_rcv;
+        struct pacote pacote_env;
+
+        /* Consumir buffer_apli_trans_env */
+        pthread_mutex_lock(&mutex_apli_trans_env2);
+
+        retirarPacoteBufferApliTransEnv(&pacote_env);
+
+        /* Consumir buffer_apli_trans_env */
+        pthread_mutex_unlock(&mutex_apli_trans_env1);
+
+        //TODO
+
+        /* Produzir buffer_trans_trans_env */
+        pthread_mutex_lock(&mutex_trans_trans_env1);
+
+        colocarPacoteBufferTransRedeEnv(pacote_env);
+
+        /* Produzir buffer_trans_trans_env */
+        pthread_mutex_unlock(&mutex_trans_trans_env2);
 
     }
 
@@ -80,6 +116,24 @@ void *enviarSegmentos() {
 
         struct segmento segmento_env;
 
+        /* Consumir buffer_trans_trans_env */
+        pthread_mutex_lock(&mutex_trans_trans_env2);
+
+        retirarSegmentoBufferTransTransRcv(&segmento_env);
+
+        /* Consumir buffer_trans_trans_env */
+        pthread_mutex_unlock(&mutex_trans_trans_env1);
+
+        //TODO
+
+        /* Produzir buffer_trans_rede_env */
+        pthread_mutex_lock(&mutex_trans_rede_env1);
+
+        colocarSegmentoBufferTransRedeRcv(segmento_env);
+
+        /* Produzir buffer_trans_rede_env */
+        pthread_mutex_unlock(&mutex_trans_rede_env2);
+
     }
 }
 
@@ -89,6 +143,25 @@ void *receberSegmentos() {
 
         struct segmento segmento_rcv;
 
+        /* Consumir buffer_trans_rede_rcv */
+        pthread_mutex_lock(&mutex_trans_rede_rcv2);
+
+        /* Retira segmento do buffer */
+        retirarSegmentoBufferTransRedeRcv(&segmento_rcv);
+
+        /* Consumir buffer_trans_rede_rcv */
+        pthread_mutex_unlock(&mutex_trans_rede_rcv1);
+
+        //TODO
+
+        /* Produzir buffer_trans_trans_rcv */
+        pthread_mutex_lock(&mutex_trans_trans_rcv1);
+
+        colocarSegmentoBufferTransTransRcv(segmento_rcv);
+
+        /* Produzir buffer_trans_trans_rcv */
+        pthread_mutex_unlock(&mutex_trans_trans_receberotas2);
+
     }
 
 }
@@ -96,16 +169,16 @@ void *receberSegmentos() {
 void colocarPacoteBufferApliTransRcv(struct pacote pacote){
 
     //Colocar no Buffer
-    buffer_trans_rede_env.tam_buffer = pacote.tam_buffer;
-    memcpy(&buffer_trans_rede_env.data, &pacote, sizeof (pacote));
+    buffer_apli_trans_env.tam_buffer = pacote.tam_buffer;
+    memcpy(&buffer_apli_trans_env.data, &pacote, sizeof (pacote));
 
 }
 
 void retirarPacoteBufferApliTransEnv(struct pacote *pacote) {
 
     //Retirar do Buffer
-    pacote->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
-    strcpy(pacote->buffer, buffer_trans_rede_rcv.data.buffer);
+    pacote->tam_buffer = buffer_apli_trans_rcv.data.tam_buffer;
+    strcpy(pacote->buffer, buffer_apli_trans_rcv.data.buffer);
 
 }
 

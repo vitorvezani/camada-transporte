@@ -9,7 +9,6 @@
 //
 
 #include "headers/globals.h"
-#include "headers/arquivo.h"
 
 void *inicializarCamadas() {
 
@@ -40,6 +39,12 @@ void *inicializarCamadas() {
     /* Inicializar Mutex Sincronismo Trans->Rede Receber */
     pthread_mutex_init(&mutex_trans_rede_rcv1, NULL);
     pthread_mutex_init(&mutex_trans_rede_rcv2, NULL);
+    /* Inicializar Mutex Sincronismo Trans->Trans Enviar */
+    pthread_mutex_init(&mutex_trans_trans_env1, NULL);
+    pthread_mutex_init(&mutex_trans_trans_env2, NULL);
+    /* Inicializar Mutex Sincronismo Trans->Trans Receber */
+    pthread_mutex_init(&mutex_trans_trans_rcv1, NULL);
+    pthread_mutex_init(&mutex_trans_trans_rcv2, NULL);
     /* Inicializar Mutex Sincronismo Apli_Trans Enviar */
     pthread_mutex_init(&mutex_apli_trans_env1, NULL);
     pthread_mutex_init(&mutex_apli_trans_env2, NULL);
@@ -56,6 +61,8 @@ void *inicializarCamadas() {
     pthread_mutex_lock(&mutex_rede_rede_env2);
     pthread_mutex_lock(&mutex_trans_rede_env2);
     pthread_mutex_lock(&mutex_trans_rede_rcv2);
+    pthread_mutex_lock(&mutex_trans_trans_env2);
+    pthread_mutex_lock(&mutex_trans_trans_rcv2);
     pthread_mutex_lock(&mutex_apli_trans_env2);
     pthread_mutex_lock(&mutex_apli_trans_rcv2);
 
@@ -124,6 +131,11 @@ void *inicializarCamadas() {
     pthread_mutex_destroy(&mutex_rede_rede_receberotas2);
     pthread_mutex_destroy(&mutex_rede_rede_rcv1);
     pthread_mutex_destroy(&mutex_rede_rede_rcv2);
+    pthread_mutex_destroy(&mutex_trans_trans_env1);
+    pthread_mutex_destroy(&mutex_trans_trans_env2);
+    pthread_mutex_destroy(&mutex_trans_trans_receberotas2);
+    pthread_mutex_destroy(&mutex_trans_trans_rcv1);
+    pthread_mutex_destroy(&mutex_trans_trans_rcv2);
     pthread_mutex_destroy(&mutex_trans_rede_env1);
     pthread_mutex_destroy(&mutex_trans_rede_env2);
     pthread_mutex_destroy(&mutex_trans_rede_rcv1);

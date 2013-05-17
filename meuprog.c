@@ -11,7 +11,6 @@
 #define TRUE    1
 
 #include "headers/globals.h"
-#include "headers/arquivo.h"
 
 int main(int argc, char const *argv[]) {
 
@@ -23,7 +22,7 @@ int main(int argc, char const *argv[]) {
     int oper, no_dst;
     char buffer[50];
 
-    int ic,ips;
+    int ic,ps;
     char *arq;
 
     int socket;
@@ -46,10 +45,9 @@ int main(int argc, char const *argv[]) {
     if (tic) {
         printf("ERRO: impossivel criar a thread : inicializarCamadas\n");
         exit(-1);
-    }else
-        printf("inicializarCamadas iniciada com sucesso!\n");
+    }
 
-    usleep(3000);
+    usleep(4000);
 
     /* Se desapega da Thread */
     //pthread_detach(threadinicializarCamadas);
@@ -64,7 +62,7 @@ int main(int argc, char const *argv[]) {
         fgets(dados_aux, 127, stdin);
         dados_aux[strlen(dados_aux) - 1] = '\0';
 
-        if (isdigit(dados_aux[0]) && isdigit(dados_aux[2])) {
+        if (isdigit(dados_aux[0])){
 
             pch = strtok(dados_aux, " ");
 
@@ -80,15 +78,15 @@ int main(int argc, char const *argv[]) {
 
             switch (oper){
                 case 1:
-                    ips = aps();
+                    ps = aps();
                 break;
 
                 case 2:
-                    fps();
+                    fps(ps);
                 break;
 
                 case 3:
-                    ic = conectar(no_dst, ips);
+                    ic = conectar(no_dst, ps);
                 break;
 
                 case 4:
@@ -108,7 +106,7 @@ int main(int argc, char const *argv[]) {
             }
 
         } else
-            printf("[MEUPROG] data[0] ou data[2]:'%c'/'%c' não é um int\n", dados_aux[0],dados_aux[2]);
+            printf("[MEUPROG] data[0] ou data[2] não é um int\n");
 
         // TESTE DE RETORNO DA CAMADA DE REDE
         /*
@@ -141,7 +139,7 @@ int main(int argc, char const *argv[]) {
         printf("Deletado com sucesso!\n");
     else
         printf("Socket não foi deletado\n");
-    
+
 */
 
     /* Espera a Thread terminar */

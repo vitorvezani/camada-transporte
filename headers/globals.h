@@ -1,7 +1,7 @@
 //
 //  globals.h
 //
-//  Guilherme Sividal - 09054512 
+//  Guilherme Sividal    - 09054512 
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 19/03/13.
@@ -17,6 +17,8 @@
 #include <netinet/in.h>
 
 // Defines
+#define MAXNOS          6
+
 #define TRUE 	1
 #define FALSE	0
 
@@ -35,6 +37,27 @@
 //#define DEBBUG_REDE_DESFRAGMENTAR
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
+//#define DEBBUG_ARQUIVO
+
+// Variaveis Globais
+
+int nos_vizinhos[6]; 						//Nós vizinhos
+int flag_id; 								// Inicializa ID em 1
+int flag_iniciei; 							// Enviar tabela de rotas à vizinhos
+int flag_saida; 							//Qual nó enviar
+
+pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
+pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
+pthread_mutex_t mutex_rede_rede_atualizei1, mutex_rede_rede_atualizei2;
+pthread_mutex_t mutex_rede_rede_receberotas2;
+pthread_mutex_t mutex_rede_rede_env1, mutex_rede_rede_env2;
+pthread_mutex_t mutex_rede_rede_rcv1, mutex_rede_rede_rcv2;
+pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2;
+pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2;
+pthread_mutex_t mutex_trans_trans_env1, mutex_trans_trans_env2;
+pthread_mutex_t mutex_trans_trans_rcv1, mutex_trans_trans_rcv2;
+pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
+pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 
 /* Estrutura do pacote */
 struct pacote {
@@ -107,12 +130,20 @@ struct frame {
     struct datagrama data;
 };
 
+struct ligacoes {
+    char nos[6][3][35];
+    int enlaces[18][3];
+};
+
 struct file {
     char file_name[20];
     int num_no;
 };
 
-// Variaveis Globais
+struct tabela_rotas tabela_rotas[6]; 		// Tabela de Rotas Interna do nó 
+
+struct datagrama buffers_fragmentacao[MAX_BUFFERS_DESFRAG]; // Buffer interno de fragmentos
+struct datagrama buffer_rede_rede_env, buffer_rede_rede_rcv; // Buffer interno entre threads
 
 struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
 struct buffer_rede_enlace buffer_rede_enlace_env, buffer_rede_enlace_rcv;
@@ -120,37 +151,9 @@ struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
 
 struct file file_info;
 
-pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
-pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
-pthread_mutex_t mutex_rede_rede_atualizei1, mutex_rede_rede_atualizei2;
-pthread_mutex_t mutex_rede_rede_receberotas2;
-pthread_mutex_t mutex_rede_rede_env1, mutex_rede_rede_env2;
-pthread_mutex_t mutex_rede_rede_rcv1, mutex_rede_rede_rcv2;
-pthread_mutex_t mutex_trans_rede_env1, mutex_trans_rede_env2;
-pthread_mutex_t mutex_trans_rede_rcv1, mutex_trans_rede_rcv2;
-pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
-pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
-
-// Threads
-
-void *enviarPacotes();
-void *receberPacotes();
-
-// Funcoes
-
-void colocarPacotesBufferApliTransEnv(struct pacote pacote);
-void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
+struct ligacoes ligacao;
 
 //Variaveis Globais à Camada de Rede
-
-int id = 1; 							// Inicializa ID em 1
-int nos_vizinhos[6]; 					//Nós vizinhos
-int iniciei = 1; 						// Enviar tabela de rotas à vizinhos
-struct tabela_rotas tabela_rotas[6]; 	// Tabela de Rotas Interna do nó 
-int saida = 0; 							//Qual nó enviar
-
-struct datagrama buffers_fragmentacao[MAX_BUFFERS_DESFRAG]; // Buffer interno de fragmentos
-struct datagrama buffer_rede_rede_env, buffer_rede_rede_rcv; // Buffer interno entre threads
 
 pthread_mutex_t mutex_buffer_rede_env, mutex_buffer_rede_rcv;
 
@@ -161,11 +164,11 @@ void *iniciarRede();
 void *iniciarTransporte();
 void *iniciarAplicacao();
 
-// Threads Da Camada de Enlace
+// Threads da Camada de Enlace
 void *enviarFrames();
 void *receberFrames();
 
-//Threads Da Camada de Rede
+//Threads da Camada de Rede
 void *enviarTabelaRotas();
 void *receberTabelaRotas();
 void *receberDatagramas();
@@ -179,14 +182,21 @@ void *receberSegmentos();
 void *enviarPacote();
 void *receberPacote();
 
-//Funcoes Da Camada de Enlace
+//Threads da Camada de Aplicação 
+void *enviarPacotes();
+void *receberPacotes();
+
+//Funções Arquivos
+void delete_espace(char* input);
+
+//Funções da Camada de Enlace
 void colocarArquivoStruct(FILE * fp);
 void retirarEspaco(char * string);
 void colocarBufferFrame(struct frame *frame);
 void colocarDatagramaBuffer(struct frame frame);
 int checkSum(struct datagrama datagram);
 
-//Funcoes Da Camada de Rede
+//Funções da Camada de Rede
 void atualizarTabelaRotas(struct datagrama datagram);
 void fragmentarDatagramaEnv(struct datagrama datagram);
 void desfragmentarDatagramaRcv(struct datagrama datagram, int *index);
@@ -211,17 +221,27 @@ void montarTabelaRotasInicial();
 void montarDatagramaTabelaRotas(struct datagrama *datagram);
 void enviarTabelaRotasVizinhos(struct datagrama *datagram);
 
-//Funcoes Da Camada de Transporte
+//Funções da Camada de Transporte
+void retirarPacoteBufferTransTransRcv(struct segmento *pacote_rcv);
+void colocarPacoteBufferApliTransRcv(struct segmento pacote_rcv);
 
-void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
-void retirarPacoteBufferApliTransEnv(struct pacote *pacote);
-void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
-void colocarPacoteBufferApliTransRcv(struct pacote pacote);
+void retirarSegmentoBufferTransTransRcv(struct segmento *segmento_rcv);
+void colocarSegmentoBufferTransRedeRcv(struct segmento segmento_rcv);
+
+void retirarPacoteBufferApliTransEnv(struct segmento *pacote_env);
+void colocarPacoteBufferTransRedeEnv(struct segmento pacote_env);
+
+void retirarSegmentoBufferTransRedeRcv(struct segmento *segmento_rcv);
+void colocarSegmentoBufferTransTransRcv(struct segmento segmento_rcv);
+
+//Funções da Camada de Aplicacao
+void colocarPacotesBufferApliTransEnv(struct pacote pacote);
+void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
+void retornoTransporte(struct pacote pacote);
 
 // API Global
-
 int aps();
-int fps();
-int conectar(int env_no, int ips);
+int fps(int ps);
+int conectar(int env_no, int ps);
 int desconectar(int ic);
 void baixar(int ic, void *arq);

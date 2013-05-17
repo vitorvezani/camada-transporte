@@ -8,7 +8,6 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/arquivo.h"
 #include "headers/globals.h"
 
 void *iniciarEnlace() {

@@ -15,7 +15,7 @@ void *iniciarAplicacao() {
     int te, tr;
     pthread_t threadEnviarPacotes, threadReceberPacotes;
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarPacotes
     te = pthread_create(&threadEnviarPacotes, NULL, enviarPacotes, NULL);
 
     if (te) {
@@ -23,7 +23,7 @@ void *iniciarAplicacao() {
         exit(-1);
     }
 
-    //Inicia a thread enviarDatagramas
+    //Inicia a thread enviarPacotes
     tr = pthread_create(&threadReceberPacotes, NULL, receberPacotes, NULL);
 
     if (tr) {
@@ -72,6 +72,83 @@ void *receberPacotes() {
 
 }
 
+int aps(){
+    int ps;
+
+    printf("Recebi pedido de um ps\n");
+
+   return ps;
+}
+
+int fps(int ps){
+
+    printf("Recebi pedido de fechamento de ps '%d'\n",ps);
+
+    return 1;
+}
+
+int conectar(int env_no, int ps){
+    int ic;
+
+    struct pacote pacote_env;
+
+    printf("Recebi pedido para conectar ao ps '%d'\n",ps);
+
+    /* Produzir buffer_rede_enlace_env */
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+    colocarPacotesBufferApliTransEnv(pacote_env);
+
+    /* Produzir buffer_rede_enlace_env */
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
+
+    /* Consome resposta da camada de enlace */
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+    retornoTransporte(pacote_env);
+
+    /* Consome resposta da camada de enlace */
+    pthread_mutex_unlock(&mutex_apli_trans_env1);
+
+    return ic;
+}
+
+int desconectar(int ic){
+
+    struct pacote pacote_env;
+
+    printf("Recebi pedido para desconectar do ic '%d'\n",ic);
+
+    /* Produzir buffer_rede_enlace_env */
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+    colocarPacotesBufferApliTransEnv(pacote_env);
+
+    /* Produzir buffer_rede_enlace_env */
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
+
+    /* Consome resposta da camada de enlace */
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+    retornoTransporte(pacote_env);
+
+    /* Consome resposta da camada de enlace */
+    pthread_mutex_unlock(&mutex_apli_trans_env1);
+
+    return 1;
+}
+
+void baixar(int ic, void *arq){
+
+    //Produz no buffer apli_trans
+    pthread_mutex_lock(&mutex_apli_trans_env1);
+
+
+    //Produz no buffer apli_trans
+    pthread_mutex_unlock(&mutex_apli_trans_env2);
+    
+}
+
 void colocarPacotesBufferApliTransEnv(struct pacote pacote){
 
     //Colocar no Buffer
@@ -87,60 +164,6 @@ void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 
 }
 
-int aps(){
-    int ips;
-
-    //Produz no buffer apli_trans
-    pthread_mutex_lock(&mutex_apli_trans_env1);
-
-
-    //Produz no buffer apli_trans
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
-
-   return ips;
-}
-int fps(){
-
-    //Produz no buffer apli_trans
-    pthread_mutex_lock(&mutex_apli_trans_env1);
-
-
-    //Produz no buffer apli_trans
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
-
-    return 1;
-}
-int conectar(int env_no, int ips){
-    int ic;
-
-    //Produz no buffer apli_trans
-    pthread_mutex_lock(&mutex_apli_trans_env1);
-
-
-    //Produz no buffer apli_trans
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
-
-    return ic;
-}
-int desconectar(int ic){
-
-    //Produz no buffer apli_trans
-    pthread_mutex_lock(&mutex_apli_trans_env1);
-
-
-    //Produz no buffer apli_trans
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
-
-    return 1;
-}
-
-void baixar(int ic, void *arq){
-
-    //Produz no buffer apli_trans
-    pthread_mutex_lock(&mutex_apli_trans_env1);
-
-
-    //Produz no buffer apli_trans
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
+void retornoTransporte(struct pacote pacote){
     
 }

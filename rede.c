@@ -1,14 +1,13 @@
 //
 //  rede.c
 //
-//  Guilherme Sividal - 09054512
+//  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 19/03/13.
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/arquivo.h"
 #include "headers/globals.h"
 
 void *iniciarRede() {
@@ -173,7 +172,7 @@ void enviarDatagramaNoNaoV(struct datagrama datagram) {
 
             /* Reescrever o env_no */
             buffer_rede_enlace_env.env_no = tabela_rotas[i].saida;
-            saida = tabela_rotas[i].saida;
+            flag_saida = tabela_rotas[i].saida;
 
 
 #ifdef DEBBUG_ROTEAMENTO
@@ -198,7 +197,7 @@ void enviarDatagramaNoNaoV(struct datagrama datagram) {
             if (MTU > 0)
                 fragmentarDatagramaEnv(datagram);
 
-            saida = 0;
+            flag_saida = 0;
 
             break;
         }
@@ -315,13 +314,13 @@ void *enviarTabelaRotas() {
         struct datagrama datagrama_env_inicial, datagrama_env;
 
         /* Executando pela primeira vez */
-        if (iniciei == 1) {
+        if (flag_iniciei == 1) {
 
             montarDatagramaTabelaRotas(&datagrama_env_inicial);
 
             enviarTabelaRotasVizinhos(&datagrama_env_inicial);
 
-            iniciei = 0;
+            flag_iniciei = 0;
 
         }
 
@@ -505,7 +504,7 @@ void fragmentarDatagramaEnv(struct datagrama datagram) {
         datagrama_env_aux.env_no = env_no;
         datagrama_env_aux.offset = offset;
         datagrama_env_aux.retorno = retorno;
-        datagrama_env_aux.id = id;
+        datagrama_env_aux.id = flag_id;
 
         printf("[REDE - FRAG] Offset: '%d'\n", datagrama_env_aux.offset);
 
@@ -556,8 +555,8 @@ void fragmentarDatagramaEnv(struct datagrama datagram) {
         colocarDatagramaBufferRedeEnlaceEnv(datagrama_env_aux);
 
         /* Se precisa enviar à nó não vizinho */
-        if (saida != 0)
-            buffer_rede_enlace_env.env_no = saida;
+        if (flag_saida != 0)
+            buffer_rede_enlace_env.env_no = flag_saida;
 
         /* Produzir buffer_rede_enlace_env */
         pthread_mutex_unlock(&mutex_rede_enlace_env2);
@@ -646,8 +645,8 @@ void retirarDatagramaBufferRedeRedeEnv(struct datagrama *datagram) {
             memcpy(datagram, &buffer_rede_rede_env, sizeof (buffer_rede_rede_env));
 
     /* Incrementa ID do pacote */
-    datagram->id = id;
-    id++;
+    datagram->id = flag_id;
+    flag_id++;
 
 }
 
@@ -690,7 +689,7 @@ void montarDatagramaTabelaRotas(struct datagrama *datagram) {
 
     datagram->tam_buffer = 10; // MUDAR PARA SIZEOF(tabela_rotas)
     datagram->offset = 0;
-    datagram->id = id;
+    datagram->id = flag_id;
     datagram->mf = -1;
     datagram->type = 2;
     datagram->retorno = -1;

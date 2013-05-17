@@ -8,7 +8,7 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include "headers/arquivo.h"
+#include "headers/globals.h"
 
 //FUNCOES DE ARQUIVO DA CAMADA DE ENLACE
 
@@ -74,7 +74,7 @@ void colocarArquivoStruct(FILE * fp) {
                         }
 
                         troca_i++;
-                    } else if (lendo = ENLACES) {
+                    } else if (lendo == ENLACES) {
 
                         ligacao.enlaces[i][j] = atoi(pch);
 

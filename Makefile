@@ -8,11 +8,14 @@
 #  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 #
 
-all: meuprog.o enlace.o rede.o arquivo.o transporte.o garbler.o inicializador.o
-	gcc -o meuprog.exe meuprog.o enlace.o rede.o arquivo.o transporte.o garbler.o inicializador.o
+all: meuprog.o garbler.o enlace.o rede.o transporte.o aplicacao.o inicializador.o arquivo.o 
+	gcc -o meuprog.exe meuprog.o garbler.o enlace.o rede.o transporte.o aplicacao.o inicializador.o arquivo.o
 
-meuprog: meuprog.c
-	gcc -c meuprog.c
+arquivo: arquivo.c
+	gcc -c arquivo.c
+
+garbler: garbler.c
+	gcc -c garbler.c
 
 enlace: enlace.c
 	gcc -c enlace.c
@@ -20,17 +23,17 @@ enlace: enlace.c
 rede: rede.c
 	gcc -c rede.c
 
-arquivo: arquivo.c
-	gcc -c arquivo.c
-
 transporte: transporte.c
 	gcc -c transporte.c
-	
-garbler: garbler.c
-	gcc -c garbler.c
 
 inicializador: inicializador.c
 	gcc -c inicializador.c
+
+aplicacao: aplicacao.c
+	gcc -c aplicacao.c
+
+meuprog: meuprog.c
+	gcc -c meuprog.c
 
 clean:
 	rm -f *.o *.exe
