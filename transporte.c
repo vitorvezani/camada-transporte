@@ -166,6 +166,8 @@ void *receberSegmentos() {
 
 }
 
+//TODO ALL FUNCTIONS
+
 void colocarPacoteBufferApliTransRcv(struct pacote pacote){
 
     //Colocar no Buffer
@@ -195,5 +197,45 @@ void retirarSegmentoBufferTransRedeRcv(struct segmento *segment) {
     //Retirar do Buffer
     segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
     strcpy(segment->buffer, buffer_trans_rede_rcv.data.buffer);
+
+}
+
+void retirarPacoteBufferTransTransRcv(struct segmento *pacote){
+
+    //Retirar do Buffer
+    segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    strcpy(segment->buffer, buffer_trans_rede_rcv.data.buffer);
+
+}
+
+void retirarSegmentoBufferTransTransRcv(struct segmento *segment){
+
+    //Retirar do Buffer
+    segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    strcpy(segment->buffer, buffer_trans_rede_rcv.data.buffer);
+
+}
+
+void colocarSegmentoBufferTransRedeRcv(struct segmento segment){
+
+    //Colocar no Buffer
+    buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
+
+}
+
+void colocarPacoteBufferTransRedeEnv(struct segmento pacote){
+
+    //Colocar no Buffer
+    buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
+
+}
+
+void colocarSegmentoBufferTransTransRcv(struct segmento segment){
+
+    //Colocar no Buffer
+    buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
 
 }

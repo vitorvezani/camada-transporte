@@ -222,17 +222,17 @@ void montarDatagramaTabelaRotas(struct datagrama *datagram);
 void enviarTabelaRotasVizinhos(struct datagrama *datagram);
 
 //Funções da Camada de Transporte
-void retirarPacoteBufferTransTransRcv(struct segmento *pacote_rcv);
-void colocarPacoteBufferApliTransRcv(struct segmento pacote_rcv);
+void retirarPacoteBufferTransTransRcv(struct segmento *pacote);
+void colocarPacoteBufferApliTransRcv(struct segmento pacote);
 
-void retirarSegmentoBufferTransTransRcv(struct segmento *segmento_rcv);
-void colocarSegmentoBufferTransRedeRcv(struct segmento segmento_rcv);
+void retirarSegmentoBufferTransTransRcv(struct segmento *segment);
+void colocarSegmentoBufferTransRedeRcv(struct segmento segment);
 
-void retirarPacoteBufferApliTransEnv(struct segmento *pacote_env);
-void colocarPacoteBufferTransRedeEnv(struct segmento pacote_env);
+void retirarPacoteBufferApliTransEnv(struct segmento *pacote);
+void colocarPacoteBufferTransRedeEnv(struct segmento pacote);
 
-void retirarSegmentoBufferTransRedeRcv(struct segmento *segmento_rcv);
-void colocarSegmentoBufferTransTransRcv(struct segmento segmento_rcv);
+void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
+void colocarSegmentoBufferTransTransRcv(struct segmento segment);
 
 //Funções da Camada de Aplicacao
 void colocarPacotesBufferApliTransEnv(struct pacote pacote);
