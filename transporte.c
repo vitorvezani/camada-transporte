@@ -160,7 +160,7 @@ void *receberSegmentos() {
         colocarSegmentoBufferTransTransRcv(segmento_rcv);
 
         /* Produzir buffer_trans_trans_rcv */
-        pthread_mutex_unlock(&mutex_trans_trans_receberotas2);
+        pthread_mutex_unlock(&mutex_trans_trans_rcv1);
 
     }
 
@@ -200,11 +200,11 @@ void retirarSegmentoBufferTransRedeRcv(struct segmento *segment) {
 
 }
 
-void retirarPacoteBufferTransTransRcv(struct segmento *pacote){
+void retirarPacoteBufferTransTransRcv(struct pacote *pacote){
 
     //Retirar do Buffer
-    segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
-    strcpy(segment->buffer, buffer_trans_rede_rcv.data.buffer);
+    pacote->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    strcpy(pacote->buffer, buffer_trans_rede_rcv.data.buffer);
 
 }
 
@@ -224,11 +224,11 @@ void colocarSegmentoBufferTransRedeRcv(struct segmento segment){
 
 }
 
-void colocarPacoteBufferTransRedeEnv(struct segmento pacote){
+void colocarPacoteBufferTransRedeEnv(struct pacote pacote){
 
     //Colocar no Buffer
-    buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
-    memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
+    buffer_trans_rede_env.tam_buffer = pacote.tam_buffer;
+    memcpy(&buffer_trans_rede_env.data, &pacote, sizeof (pacote));
 
 }
 

@@ -53,10 +53,11 @@ int main(int argc, char const *argv[]) {
     //pthread_detach(threadinicializarCamadas);
 
     //Pega os Dados digitado pelo usuario
+
+    printf("[MEUPROG] INFO: 1.aps, 2.fps, 3.conectar, 4.desconectar, 5.baixar, 6.sair\n");
     while(oper != 6){
 
-        printf("[MEUPROG]1- aps, 2-fps, 3-conectar, 4-desconectar, 5-baixar, 6-sair\n");
-        printf("[MEUPROG] oper, nó, data: ");
+        printf("[MEUPROG] [oper] [nó] [data]: ");
         fflush(stdout);
         fpurge(stdin);
         fgets(dados_aux, 127, stdin);
@@ -69,12 +70,12 @@ int main(int argc, char const *argv[]) {
             oper = atoi(pch);
 
             pch = strtok(NULL, " ");
-
+                        
             no_dst = atoi(pch);
 
             pch = strtok(NULL, "");
 
-            strncpy(buffer, pch, 50);
+            strcpy(buffer, pch);
 
             switch (oper){
                 case 1:

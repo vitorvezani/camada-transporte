@@ -133,7 +133,6 @@ void *inicializarCamadas() {
     pthread_mutex_destroy(&mutex_rede_rede_rcv2);
     pthread_mutex_destroy(&mutex_trans_trans_env1);
     pthread_mutex_destroy(&mutex_trans_trans_env2);
-    pthread_mutex_destroy(&mutex_trans_trans_receberotas2);
     pthread_mutex_destroy(&mutex_trans_trans_rcv1);
     pthread_mutex_destroy(&mutex_trans_trans_rcv2);
     pthread_mutex_destroy(&mutex_trans_rede_env1);
