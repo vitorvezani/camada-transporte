@@ -17,15 +17,15 @@
 #include <netinet/in.h>
 
 // Defines
-#define MAXNOS          6
+#define MAXNOS              6
 
-#define TRUE 	1
-#define FALSE	0
+#define TRUE 	            1
+#define FALSE	            0
 
-#define TAM_MAX_BUFFER 1400
+#define TAM_MAX_BUFFER      1400
 
-#define NOS             1
-#define ENLACES         2
+#define NOS                 1
+#define ENLACES             2
 
 #define MAX_BUFFERS_DESFRAG 5
 
@@ -45,6 +45,7 @@ int nos_vizinhos[6]; 						//Nós vizinhos
 int flag_id; 								// Inicializa ID em 1
 int flag_iniciei; 							// Enviar tabela de rotas à vizinhos
 int flag_saida; 							//Qual nó enviar
+int id_ps;
 
 pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
 pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
@@ -67,25 +68,42 @@ struct pacote {
 };
 
 struct buffer_apli_trans {
+    int tam_buffer;
     int tipo;
+    int env_no;
+    int retorno;
+    struct pacote data;
+};
+
+/* Estrutura do segmento */
+struct segmento {
+    int tam_buffer;
+    struct pacote data;
+};
+
+/* Estrutura do buffer entre transporte e rede */
+struct buffer_trans_trans {
     int tam_buffer;
     int env_no;
     int retorno;
     struct pacote data;
 };
 
+
+/* Estrutura do buffer entre transporte e rede */
+struct buffer_trans_rede {
+    int tam_buffer;
+    int env_no;
+    int retorno;
+    struct segmento data;
+};
+
 /* Estrutura da tabela de rotas */
 struct tabela_rotas {
-	int quem_enviou;
+    int quem_enviou;
     int destino;
     int custo;
     int saida;
-};
-
-/* Estrutura do segmento */
-struct segmento {
-    int tam_buffer;
-    char buffer[TAM_MAX_BUFFER];
 };
 
 /* uniao do segmento ou tabela de rotas */
@@ -105,14 +123,6 @@ struct datagrama {
     int num_no;
     int retorno;
     union segmento_tabela data;
-};
-
-/* Estrutura do buffer entre transporte e rede */
-struct buffer_trans_rede {
-    int tam_buffer;
-    int env_no;
-    int retorno;
-    struct segmento data;
 };
 
 /* Estrutura do buffer entre rede e enlace */
@@ -146,6 +156,7 @@ struct datagrama buffers_fragmentacao[MAX_BUFFERS_DESFRAG]; // Buffer interno de
 struct datagrama buffer_rede_rede_env, buffer_rede_rede_rcv; // Buffer interno entre threads
 
 struct buffer_apli_trans buffer_apli_trans_env, buffer_apli_trans_rcv;
+struct buffer_trans_trans buffer_trans_trans_env, buffer_trans_trans_rcv;
 struct buffer_rede_enlace buffer_rede_enlace_env, buffer_rede_enlace_rcv;
 struct buffer_trans_rede buffer_trans_rede_env, buffer_trans_rede_rcv;
 
@@ -222,24 +233,24 @@ void montarDatagramaTabelaRotas(struct datagrama *datagram);
 void enviarTabelaRotasVizinhos(struct datagrama *datagram);
 
 //Funções da Camada de Transporte
-void retirarPacoteBufferTransTransRcv(struct pacote *pacote);
 void colocarPacoteBufferApliTransRcv(struct pacote pacote);
-
-void retirarSegmentoBufferTransTransRcv(struct segmento *segment);
-void colocarSegmentoBufferTransRedeRcv(struct segmento segment);
-
 void retirarPacoteBufferApliTransEnv(struct pacote *pacote);
-void colocarPacoteBufferTransRedeEnv(struct pacote pacote);
 
-void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
+void colocarPacoteBufferTransTransEnv(struct pacote pacote);
+void retirarPacoteBufferTransTransRcv(struct pacote *pacote);
+
 void colocarSegmentoBufferTransTransRcv(struct segmento segment);
+void retirarSegmentoBufferTransTransEnv(struct segmento *segment);
+
+void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
+void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
 
 //Funções da Camada de Aplicacao
 void colocarPacotesBufferApliTransEnv(struct pacote pacote);
 void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
 void retornoTransporte(struct pacote pacote);
 
-// API Global
+//Funções da Camada de Aplicacao (API)
 int aps();
 int fps(int ps);
 int conectar(int env_no, int ps);

@@ -75,6 +75,11 @@ void *inicializarCamadas() {
         for (j = 0; j < 3; ++j)
             strcpy(ligacao.nos[i][j], "-1");
 
+    flag_id = 0;                                // Inicializa ID em 1
+    flag_iniciei = 1;                           // Enviar tabela de rotas à vizinhos
+    flag_saida = 0;                             //Qual nó enviar
+    id_ps = 0;
+
     /* Inicia a thread iniciarEnlace */
     te = pthread_create(&threadIniciaEnlace, NULL, iniciarEnlace, NULL);
 
@@ -105,7 +110,7 @@ void *inicializarCamadas() {
 
     usleep(1000);
 
-    /* Inicia a thread iniciarTransporte */
+    /* Inicia a thread iniciarAplicacao */
     tap = pthread_create(&threadIniciaAplicacao, NULL, iniciarAplicacao, NULL);
 
     if (tap) {

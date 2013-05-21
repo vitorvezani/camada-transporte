@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]) {
     char *pch;
     pthread_t threadinicializarCamadas;
 
-    int oper, no_dst;
+    int oper, var;
     char buffer[50];
 
     int ic,ps;
@@ -27,6 +27,8 @@ int main(int argc, char const *argv[]) {
 
     int socket;
     int ret;
+
+	pch = (char*) malloc (128);
 
     /* Testa Parametros */
     if (argc != 3) {
@@ -69,37 +71,56 @@ int main(int argc, char const *argv[]) {
 
             oper = atoi(pch);
 
-            pch = strtok(NULL, " ");
-                        
-            no_dst = atoi(pch);
+			if(dados_aux[3] != NULL){
 
-            pch = strtok(NULL, "");
+		        pch = strtok(NULL, " ");
 
-            strcpy(buffer, pch);
+		        var = atoi(pch);
+
+		    }if(dados_aux[5] != NULL){ 
+     
+		        pch = strtok(NULL, "");
+
+		        strcpy(buffer, pch);
+			}
 
             switch (oper){
                 case 1:
+
                     ps = aps();
+
+                    id_ps++;
+
                 break;
 
                 case 2:
+
                     fps(ps);
+
                 break;
 
                 case 3:
-                    ic = conectar(no_dst, ps);
+
+                    ic = conectar(var, ps);
+
                 break;
 
                 case 4:
+
                     desconectar(ic);
+
                 break;
 
                 case 5:
+
                     baixar(ic, arq);
+
                 break;
 
                 case 6:
+
                     printf("Sair da aplicacao\n");
+                    
                 break;
 
                 default:
