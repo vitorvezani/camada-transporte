@@ -29,6 +29,8 @@
 
 #define MAX_BUFFERS_DESFRAG 5
 
+#define TAM_JANELA          500
+
 #define INFINITO 999999
 
 //#define DEBBUG_ENLACE
@@ -59,6 +61,7 @@ pthread_mutex_t mutex_trans_trans_env1, mutex_trans_trans_env2;
 pthread_mutex_t mutex_trans_trans_rcv1, mutex_trans_trans_rcv2;
 pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
 pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
+pthread_mutex_t &env_seg_rcv_seg_timer_2;
 
 /* Estrutura do pacote */
 struct pacote {

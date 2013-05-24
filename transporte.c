@@ -12,8 +12,8 @@
 
 void *iniciarTransporte() {
 
-    int tes, trs, tea, tra;
-    pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarPacote, threadReceberPacote;
+    int tes, trs, tea, tra, tt;
+    pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarPacote, threadReceberPacote, threadTimer;
 
     //Inicia a thread enviarSegmentos
     tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
@@ -52,6 +52,7 @@ void *iniciarTransporte() {
     pthread_join(threadReceberSegmentos, NULL);
     pthread_join(threadEnviarPacote, NULL);
     pthread_join(threadReceberPacote, NULL);
+    pthread_join(threadTimer, NULL);
 
 }
 
@@ -110,34 +111,83 @@ void *receberPacote() {
 
 }
 
+void *timer() {
+
+    usleep(100000);
+
+    nextseqnum = base;
+
+    pthread_mutex_unlock(env_seg_rcv_seg_timer_2);
+}
+
 void *enviarSegmentos() {
 
+    int base = 0;
+    int nextseqnum = 0;
+    int first_pkg;
+
     while (TRUE) {
-
-        struct segmento segmento_env;
-
+        
         /* Consumir buffer_trans_trans_env */
         pthread_mutex_lock(&mutex_trans_trans_env2);
 
-        retirarSegmentoBufferTransTransEnv(&segmento_env);
+        while(nextseqnum < base + TAM_JANELA){
 
-        /* Consumir buffer_trans_trans_env */
-        pthread_mutex_unlock(&mutex_trans_trans_env1);
+            struct segmento segmento_env;
 
-        //TODO
+            first_pkg = 1;
+
+            retirarSegmentoBufferTransTransEnv(&segmento_env);
+
+            /* Consumir buffer_trans_trans_env */
+            pthread_mutex_unlock(&mutex_trans_trans_env1);
+
+            // Envia os segmentos da janela
+
+            //Envia Segmento
+
+            /* Produzir buffer_trans_rede_env */
+            pthread_mutex_lock(&mutex_trans_rede_env1);
+
+            colocarSegmentoBufferTransRedeEnv(segmento_env);
+
+            /* Produzir buffer_trans_rede_env */
+            pthread_mutex_unlock(&mutex_trans_rede_env2);
+
+            if (first_pkg)
+            {
+                //Inicia a thread enviarPacote
+                tt = pthread_create(&threadTimer, NULL, timer, NULL);
+
+                //Start Time
+                if (tt) {
+                    printf("ERRO: impossivel criar a thread : timer\n");
+                    exit(-1);
+                }
+
+                first_pkg = 0;
+            }
+
+            nextseqnum += 250;    
+        }
 
         /* Produzir buffer_trans_rede_env */
-        pthread_mutex_lock(&mutex_trans_rede_env1);
+        pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
-        colocarSegmentoBufferTransRedeEnv(segmento_env);
+        // Se o timer nao estourou, anda com a janela
+        if (base != nextseqnum){
+            
+            pthread_kill(&threadTimer,SIGKILL);
 
-        /* Produzir buffer_trans_rede_env */
-        pthread_mutex_unlock(&mutex_trans_rede_env2);
-
+            base = ack;
+            base = nextseqnum;
+        }
     }
 }
 
 void *receberSegmentos() {
+
+    int expectedseqnum = 0;
 
     while (TRUE) {
 
@@ -152,20 +202,25 @@ void *receberSegmentos() {
         /* Consumir buffer_trans_rede_rcv */
         pthread_mutex_unlock(&mutex_trans_rede_rcv1);
 
-        //TODO
+/*
+        if (Segmento de ack)
+            sigkill(ThreadTimer)
+        else{
+*/
+            // Produzir buffer_trans_trans_rcv
+            pthread_mutex_lock(&mutex_trans_trans_rcv1);
 
-        /* Produzir buffer_trans_trans_rcv */
-        pthread_mutex_lock(&mutex_trans_trans_rcv1);
+            colocarSegmentoBufferTransTransRcv(segmento_rcv);
 
-        colocarSegmentoBufferTransTransRcv(segmento_rcv);
+            // Produzir buffer_trans_trans_rcv
+            pthread_mutex_unlock(&mutex_trans_trans_rcv1);
 
-        /* Produzir buffer_trans_trans_rcv */
-        pthread_mutex_unlock(&mutex_trans_trans_rcv1);
-
+/*      //Enviar Sinal de ack para o remetente
+        enviarack();
+        }
+*/
     }
 }
-
-//TODO ALL FUNCTIONS
 
 void colocarPacoteBufferApliTransRcv(struct pacote pacote){
 

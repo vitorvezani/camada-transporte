@@ -4,7 +4,7 @@
 //  Guilherme Sividal - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
-//  Created by Vitor Vezani on 19/03/13.
+//  Created by Vitor Vezani on 25/03/13.
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
@@ -65,6 +65,7 @@ void *inicializarCamadas() {
     pthread_mutex_lock(&mutex_trans_trans_rcv2);
     pthread_mutex_lock(&mutex_apli_trans_env2);
     pthread_mutex_lock(&mutex_apli_trans_rcv2);
+    pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
     /* Inicializacao das estrutura ligacao */
     for (i = 0; i < 18; ++i)
