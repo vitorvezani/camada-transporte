@@ -12,6 +12,11 @@
 
 void *iniciarAplicacao() {
 
+    int i;
+
+    for (i = 0; i < MAX_PS; i++)
+        ps[i] = -1;
+
     int te, tr;
     pthread_t threadEnviarPacotes, threadReceberPacotes;
 
@@ -23,7 +28,7 @@ void *iniciarAplicacao() {
         exit(-1);
     }
 
-    //Inicia a thread enviarPacotes
+    //Inicia a thread receberPacotes
     tr = pthread_create(&threadReceberPacotes, NULL, receberPacotes, NULL);
 
     if (tr) {
@@ -73,16 +78,25 @@ void *receberPacotes() {
 }
 
 int aps(){
-    int ps;
 
-    printf("Recebi pedido de um ps\n");
+    int i;
 
-   return ps;
+    for (i = 0; i < MAX_PS; ++i)
+    {
+        if (ps[i] == -1)
+        {
+            ps[i] = 1;
+            return i;
+        }
+    }
+    return -1;
 }
 
-int fps(int ps){
+int fps(int num_ps){
 
-    printf("Recebi pedido de fechamento de ps '%d'\n",ps);
+    ps[num_ps] = -1;
+
+    printf("Recebi pedido de fechamento do ps '%d'\n", num_ps);
 
     return 1;
 }
@@ -92,12 +106,14 @@ int conectar(int env_no, int ps){
 
     struct pacote pacote_env;
 
-    printf("Recebi pedido para conectar ao ps '%d'\n",ps);
+    printf("Recebi pedido para conectar no no : '%d', ps '%d'\n", env_no, ps);
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_lock(&mutex_apli_trans_env1);
 
     colocarPacotesBufferApliTransEnv(pacote_env);
+
+    pacote_env.tipo = CONECTAR;
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_unlock(&mutex_apli_trans_env2);
@@ -106,6 +122,8 @@ int conectar(int env_no, int ps){
     pthread_mutex_lock(&mutex_apli_trans_env1);
 
     retornoTransporte(pacote_env);
+
+    ic = pacote_env.retorno;
 
     /* Consome resposta da camada de enlace */
     pthread_mutex_unlock(&mutex_apli_trans_env1);
@@ -117,12 +135,16 @@ int desconectar(int ic){
 
     struct pacote pacote_env;
 
-    printf("Recebi pedido para desconectar do ic '%d'\n",ic);
+    printf("Recebi pedido para desconectar do ic '%d'\n", ic);
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_lock(&mutex_apli_trans_env1);
 
     colocarPacotesBufferApliTransEnv(pacote_env);
+
+    pacote_env.tipo = DESCONECTAR;
+
+    pacote_env.ic = ic;
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_unlock(&mutex_apli_trans_env2);
@@ -166,4 +188,13 @@ void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 
 void retornoTransporte(struct pacote pacote){
     
+    // Não houve erro de malloc ou free
+    if (pacote.retorno != -1)
+        if (pacote.tipo == CONECTAR)
+        {
+            printf("Conexão estabelecida com sucesso! end_buffer: '%d' \n", pacote.retorno);
+        }else if (pacote.tipo == DESCONECTAR)
+        {
+            printf("Conexão encerrada com sucesso!\n");
+        }
 }

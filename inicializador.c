@@ -45,6 +45,7 @@ void *inicializarCamadas() {
     /* Inicializar Mutex Sincronismo Trans->Trans Receber */
     pthread_mutex_init(&mutex_trans_trans_rcv1, NULL);
     pthread_mutex_init(&mutex_trans_trans_rcv2, NULL);
+    pthread_mutex_init(&mutex_trans_acess_exc_timer, NULL);
     /* Inicializar Mutex Sincronismo Apli_Trans Enviar */
     pthread_mutex_init(&mutex_apli_trans_env1, NULL);
     pthread_mutex_init(&mutex_apli_trans_env2, NULL);
@@ -79,7 +80,6 @@ void *inicializarCamadas() {
     flag_id = 0;                                // Inicializa ID em 1
     flag_iniciei = 1;                           // Enviar tabela de rotas à vizinhos
     flag_saida = 0;                             //Qual nó enviar
-    id_ps = 0;
 
     /* Inicia a thread iniciarEnlace */
     te = pthread_create(&threadIniciaEnlace, NULL, iniciarEnlace, NULL);

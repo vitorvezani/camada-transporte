@@ -19,10 +19,10 @@ int main(int argc, char const *argv[]) {
     char *pch;
     pthread_t threadinicializarCamadas;
 
-    int oper, var;
+    int oper, env_no;
     char buffer[50];
 
-    int ic,ps;
+    int ic, ps, ret_fps;
     char *arq;
 
     int socket;
@@ -70,38 +70,45 @@ int main(int argc, char const *argv[]) {
             pch = strtok(dados_aux, " ");
 
             oper = atoi(pch);
-
-			if(dados_aux[3] != NULL){
-
-		        pch = strtok(NULL, " ");
-
-		        var = atoi(pch);
-
-		    }if(dados_aux[5] != NULL){ 
+/*
+        if(dados_aux[5] != NULL){ 
      
 		        pch = strtok(NULL, "");
 
 		        strcpy(buffer, pch);
 			}
-
+*/
+            
             switch (oper){
                 case 1:
 
                     ps = aps();
 
-                    id_ps++;
+                    if (ps == -1)
+                        printf("Impossivel criar ps\n");
+                    else
+                        printf("ps criado '%d'\n", ps);
 
                 break;
 
                 case 2:
 
-                    fps(ps);
+                    ret_fps = fps(ps);
+
+                    if (ret_fps != -1)
+                        printf("ps: '%d' desconectado!\n", ps);
 
                 break;
 
                 case 3:
 
-                    ic = conectar(var, ps);
+                    pch = strtok(NULL, " ");
+
+                    env_no = atoi(pch);
+
+                    printf("env_no: '%d', ps: '%d'\n", env_no, ps);
+
+                    ic = conectar(env_no, ps);
 
                 break;
 

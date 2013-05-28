@@ -19,17 +19,23 @@
 // Defines
 #define MAXNOS              6
 
+#define CONECTAR            0
+#define DESCONECTAR         1
+#define BAIXAR              2
+
 #define TRUE 	            1
 #define FALSE	            0
 
 #define TAM_MAX_BUFFER      1400
+#define TAM_SEGMENT         250
+#define TAM_JANELA          2000
+#define TAM_BUFFER_TRANS    4000
 
 #define NOS                 1
 #define ENLACES             2
 
 #define MAX_BUFFERS_DESFRAG 5
-
-#define TAM_JANELA          500
+#define MAX_PS              10
 
 #define INFINITO 999999
 
@@ -47,7 +53,8 @@ int nos_vizinhos[6]; 						//Nós vizinhos
 int flag_id; 								// Inicializa ID em 1
 int flag_iniciei; 							// Enviar tabela de rotas à vizinhos
 int flag_saida; 							//Qual nó enviar
-int id_ps;
+int ps[10];                                 //ps
+int ack;
 
 pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
 pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
@@ -61,12 +68,22 @@ pthread_mutex_t mutex_trans_trans_env1, mutex_trans_trans_env2;
 pthread_mutex_t mutex_trans_trans_rcv1, mutex_trans_trans_rcv2;
 pthread_mutex_t mutex_apli_trans_env1, mutex_apli_trans_env2;
 pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
-pthread_mutex_t &env_seg_rcv_seg_timer_2;
+pthread_mutex_t env_seg_rcv_seg_timer_2;
+pthread_mutex_t mutex_trans_acess_exc_timer;
+
+
+/* Estrutura do Timer */
+struct param_timer {
+    int base;
+    int nextseqnum;
+};
 
 /* Estrutura do pacote */
 struct pacote {
-    //DEFINIR
+    int ic;
+    int tipo;
     int tam_buffer;
+    int retorno;
     char buffer[TAM_MAX_BUFFER];
 };
 
@@ -78,12 +95,6 @@ struct buffer_apli_trans {
     struct pacote data;
 };
 
-/* Estrutura do segmento */
-struct segmento {
-    int tam_buffer;
-    struct pacote data;
-};
-
 /* Estrutura do buffer entre transporte e rede */
 struct buffer_trans_trans {
     int tam_buffer;
@@ -92,6 +103,14 @@ struct buffer_trans_trans {
     struct pacote data;
 };
 
+/* Estrutura do segmento */
+struct segmento {
+    int flag_ack;
+    int ack;
+    int seq;
+    int tam_buffer;
+    struct pacote data;
+};
 
 /* Estrutura do buffer entre transporte e rede */
 struct buffer_trans_rede {
@@ -195,6 +214,7 @@ void *enviarSegmentos();
 void *receberSegmentos();
 void *enviarPacote();
 void *receberPacote();
+void *timer(void *param);
 
 //Threads da Camada de Aplicação 
 void *enviarPacotes();
@@ -243,7 +263,7 @@ void colocarPacoteBufferTransTransEnv(struct pacote pacote);
 void retirarPacoteBufferTransTransRcv(struct pacote *pacote);
 
 void colocarSegmentoBufferTransTransRcv(struct segmento segment);
-void retirarSegmentoBufferTransTransEnv(struct segmento *segment);
+void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum);
 
 void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
@@ -255,7 +275,7 @@ void retornoTransporte(struct pacote pacote);
 
 //Funções da Camada de Aplicacao (API)
 int aps();
-int fps(int ps);
+int fps(int num_ps);
 int conectar(int env_no, int ps);
 int desconectar(int ic);
 void baixar(int ic, void *arq);

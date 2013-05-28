@@ -23,7 +23,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarSegmentos
+    //Inicia a thread receberSegmentos
     trs = pthread_create(&threadReceberSegmentos, NULL, receberSegmentos, NULL);
 
     if (trs) {
@@ -39,7 +39,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarPacote
+    //Inicia a thread receberPacote
     tra = pthread_create(&threadReceberPacote, NULL, receberPacote, NULL);
 
     if (tra) {
@@ -52,7 +52,6 @@ void *iniciarTransporte() {
     pthread_join(threadReceberSegmentos, NULL);
     pthread_join(threadEnviarPacote, NULL);
     pthread_join(threadReceberPacote, NULL);
-    pthread_join(threadTimer, NULL);
 
 }
 
@@ -97,54 +96,82 @@ void *receberPacote() {
         /* Consumir buffer_apli_trans_env */
         pthread_mutex_unlock(&mutex_apli_trans_env1);
 
-        //TODO
+        if (pacote_env.tipo == CONECTAR)
+        {
 
-        /* Produzir buffer_trans_trans_env */
-        pthread_mutex_lock(&mutex_trans_trans_env1);
+            pacote_env.retorno = malloc( sizeof (TAM_JANELA));
 
-        colocarPacoteBufferTransTransEnv(pacote_env);
+        }else if (pacote_env.tipo == DESCONECTAR)
+        {
 
-        /* Produzir buffer_trans_trans_env */
-        pthread_mutex_unlock(&mutex_trans_trans_env2);
+            free((int *)pacote_env.retorno);
+
+        }else{
+
+            /* Produzir buffer_trans_trans_env */
+            pthread_mutex_lock(&mutex_trans_trans_env1);
+
+            colocarPacoteBufferTransTransEnv(pacote_env);
+
+            /* Produzir buffer_trans_trans_env */
+            pthread_mutex_unlock(&mutex_trans_trans_env2);
+
+        }
 
     }
 
 }
 
-void *timer() {
+void *timer(void *param) {
+
+    struct param_timer *param_timer = (struct param_timer *)param;
+
+    int base = param_timer->base; 
+
+    // Destrava acesso excluiso à variavel param
+    pthread_mutex_unlock(&mutex_trans_acess_exc_timer);
 
     usleep(100000);
 
-    nextseqnum = base;
+    param_timer->base = base;
+    param_timer->nextseqnum = base;
 
-    pthread_mutex_unlock(env_seg_rcv_seg_timer_2);
+    pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
 }
 
 void *enviarSegmentos() {
 
-    int base = 0;
-    int nextseqnum = 0;
+    struct param_timer param;
+
     int first_pkg;
+    int tt;
+    pthread_t threadTimer;
+
+    param.base = 0;
+    param.nextseqnum = 0;
 
     while (TRUE) {
         
+        first_pkg = 1;
+
         /* Consumir buffer_trans_trans_env */
         pthread_mutex_lock(&mutex_trans_trans_env2);
 
-        while(nextseqnum < base + TAM_JANELA){
+        while(param.nextseqnum < param.base + TAM_JANELA){
 
             struct segmento segmento_env;
 
-            first_pkg = 1;
-
-            retirarSegmentoBufferTransTransEnv(&segmento_env);
+            retirarSegmentoBufferTransTransEnv(&segmento_env, param.nextseqnum);
 
             /* Consumir buffer_trans_trans_env */
             pthread_mutex_unlock(&mutex_trans_trans_env1);
 
             // Envia os segmentos da janela
 
-            //Envia Segmento
+            segmento_env.seq = param.nextseqnum;
+
+            segmento_env.flag_ack = 0;
+            segmento_env.ack = (param.nextseqnum + TAM_SEGMENT + 1);
 
             /* Produzir buffer_trans_rede_env */
             pthread_mutex_lock(&mutex_trans_rede_env1);
@@ -156,10 +183,13 @@ void *enviarSegmentos() {
 
             if (first_pkg)
             {
-                //Inicia a thread enviarPacote
-                tt = pthread_create(&threadTimer, NULL, timer, NULL);
+                // Trava acesso excluiso à variavel param
+                pthread_mutex_lock(&mutex_trans_acess_exc_timer);
 
-                //Start Time
+                //Inicia a thread timer
+                tt = pthread_create(&threadTimer, NULL, timer, (void *)&param);
+
+                //Dispara Thread Time
                 if (tt) {
                     printf("ERRO: impossivel criar a thread : timer\n");
                     exit(-1);
@@ -167,20 +197,26 @@ void *enviarSegmentos() {
 
                 first_pkg = 0;
             }
+            
+            // Trava acesso excluiso à variavel param
+            pthread_mutex_lock(&mutex_trans_acess_exc_timer);
 
-            nextseqnum += 250;    
+            param.nextseqnum += TAM_SEGMENT;   
+
+            // Destrava acesso excluiso à variavel param
+            pthread_mutex_unlock(&mutex_trans_acess_exc_timer); 
         }
 
         /* Produzir buffer_trans_rede_env */
         pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
         // Se o timer nao estourou, anda com a janela
-        if (base != nextseqnum){
+        if (param.base != param.nextseqnum){
             
-            pthread_kill(&threadTimer,SIGKILL);
+            pthread_kill(&threadTimer, SIGKILL);
 
-            base = ack;
-            base = nextseqnum;
+            param.base = ack;
+            param.nextseqnum = param.base;
         }
     }
 }
@@ -203,8 +239,8 @@ void *receberSegmentos() {
         pthread_mutex_unlock(&mutex_trans_rede_rcv1);
 
 /*
-        if (Segmento de ack)
-            sigkill(ThreadTimer)
+        if (segmento_rcv.flag_ack == 1)
+            ack = segmento_rcv.ack;
         else{
 */
             // Produzir buffer_trans_trans_rcv
@@ -263,11 +299,14 @@ void colocarSegmentoBufferTransTransRcv(struct segmento segment){
 
 }
 
-void retirarSegmentoBufferTransTransEnv(struct segmento *segment){
+void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum){
 
-    //Retirar do Buffer
+    void *ptr;
+    ptr = &(buffer_trans_trans_env.data);
+    ptr += nextseqnum;
+
     segment->tam_buffer = buffer_trans_trans_env.data.tam_buffer;
-    memcpy(segment, &buffer_trans_trans_env.data, sizeof (segment));
+    memcpy(&(segment->data), ptr, TAM_SEGMENT);
 
 }
 
@@ -284,6 +323,9 @@ void retirarSegmentoBufferTransRedeRcv(struct segmento *segment) {
 
     //Retirar do Buffer
     segment->tam_buffer = buffer_trans_rede_rcv.data.tam_buffer;
+    segment->ack = buffer_trans_rede_rcv.data.ack;
+    segment->flag_ack = buffer_trans_rede_rcv.data.flag_ack;
+    segment->seq = buffer_trans_rede_rcv.data.seq;
     memcpy(segment, &buffer_trans_rede_rcv.data, sizeof (segment));
 
 }
