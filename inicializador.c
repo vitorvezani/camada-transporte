@@ -1,7 +1,7 @@
 //
 //  inicializador.c
 //
-//  Guilherme Sividal - 09054512
+//  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 25/03/13.
@@ -77,6 +77,7 @@ void *inicializarCamadas() {
         for (j = 0; j < 3; ++j)
             strcpy(ligacao.nos[i][j], "-1");
 
+    // Inicialização de variaveis de controle
     flag_id = 0;                                // Inicializa ID em 1
     flag_iniciei = 1;                           // Enviar tabela de rotas à vizinhos
     flag_saida = 0;                             //Qual nó enviar
@@ -149,6 +150,7 @@ void *inicializarCamadas() {
     pthread_mutex_destroy(&mutex_trans_rede_env2);
     pthread_mutex_destroy(&mutex_trans_rede_rcv1);
     pthread_mutex_destroy(&mutex_trans_rede_rcv2);
+    pthread_mutex_destroy(&env_seg_rcv_seg_timer_2);
 
     return 0;
 }

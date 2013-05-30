@@ -8,13 +8,13 @@
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
 //
 
-#include <stdio.h>		    /* for printf() */
-#include <stdlib.h>			/* for exit() */
-#include <string.h>			/* for string manipulation() */
-#include <pthread.h>     	/* para poder manipular threads */
-#include <stdlib.h>			/* for exit() */
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <stdio.h>		    /* para printf() */
+#include <stdlib.h>			/* para exit() */
+#include <string.h>			/* para manipulação de string */
+#include <pthread.h>     	/* para manipulação de threads */
+#include <stdlib.h>			/* para exit() */
+#include <sys/socket.h>     /* para sockets */
+#include <netinet/in.h>     /* para protocols */
 
 // Defines
 #define MAXNOS              6
@@ -27,6 +27,7 @@
 #define FALSE	            0
 
 #define TAM_MAX_BUFFER      1400
+
 #define TAM_SEGMENT         250
 #define TAM_JANELA          2000
 #define TAM_BUFFER_TRANS    4000
@@ -39,22 +40,24 @@
 
 #define INFINITO 999999
 
+//#define DEBBUG_ARQUIVO
 //#define DEBBUG_ENLACE
 //#define DEBBUG_REDE
 //#define DEBBUG_REDE_FRAGMENTAR
 //#define DEBBUG_REDE_DESFRAGMENTAR
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
-//#define DEBBUG_ARQUIVO
+#define DEBBUG_TRANSPORTE
 
 // Variaveis Globais
 
-int nos_vizinhos[6]; 						//Nós vizinhos
-int flag_id; 								// Inicializa ID em 1
-int flag_iniciei; 							// Enviar tabela de rotas à vizinhos
-int flag_saida; 							//Qual nó enviar
-int ps[10];                                 //ps
-int ack;
+int nos_vizinhos[6]; 	// Nós vizinhos
+int flag_id; 			// Inicializa ID em 1
+int flag_iniciei; 		// Enviar tabela de rotas à vizinhos
+int flag_saida; 		// Qual nó enviar
+int ps[10];             // Estrutura do PS
+int ack;                // Ack
+int sync;               // Sync
 
 pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
 pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
@@ -71,32 +74,36 @@ pthread_mutex_t mutex_apli_trans_rcv1, mutex_apli_trans_rcv2;
 pthread_mutex_t env_seg_rcv_seg_timer_2;
 pthread_mutex_t mutex_trans_acess_exc_timer;
 
-
-/* Estrutura do Timer */
-struct param_timer {
-    int base;
-    int nextseqnum;
+/* Estrutura do ic */
+struct ic {
+    int env_no;
+    int ps;
+    char * end_buffer;
 };
 
 /* Estrutura do pacote */
 struct pacote {
-    int ic;
+
     int tipo;
     int tam_buffer;
-    int retorno;
+    char * retorno;
     char buffer[TAM_MAX_BUFFER];
+
 };
 
 struct buffer_apli_trans {
+
     int tam_buffer;
     int tipo;
     int env_no;
     int retorno;
     struct pacote data;
+
 };
 
 /* Estrutura do buffer entre transporte e rede */
 struct buffer_trans_trans {
+    int num_buffer;
     int tam_buffer;
     int env_no;
     int retorno;
@@ -105,9 +112,14 @@ struct buffer_trans_trans {
 
 /* Estrutura do segmento */
 struct segmento {
+    int flag_sync;
+    int flag_push;
     int flag_ack;
+    int flag_connect;
     int ack;
-    int seq;
+    int seqnum;
+    int num_no;
+    int env_no;
     int tam_buffer;
     struct pacote data;
 };
@@ -214,7 +226,7 @@ void *enviarSegmentos();
 void *receberSegmentos();
 void *enviarPacote();
 void *receberPacote();
-void *timer(void *param);
+void *timer();
 
 //Threads da Camada de Aplicação 
 void *enviarPacotes();
@@ -262,7 +274,7 @@ void retirarPacoteBufferApliTransEnv(struct pacote *pacote);
 void colocarPacoteBufferTransTransEnv(struct pacote pacote);
 void retirarPacoteBufferTransTransRcv(struct pacote *pacote);
 
-void colocarSegmentoBufferTransTransRcv(struct segmento segment);
+void colocarSegmentoBufferTransTransRcv(struct segmento segment, int seqnum);
 void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum);
 
 void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
@@ -276,6 +288,6 @@ void retornoTransporte(struct pacote pacote);
 //Funções da Camada de Aplicacao (API)
 int aps();
 int fps(int num_ps);
-int conectar(int env_no, int ps);
-int desconectar(int ic);
-void baixar(int ic, void *arq);
+struct ic conectar(int env_no, int ps);
+int desconectar(struct ic ic);
+void baixar(struct ic ic, char *arq);

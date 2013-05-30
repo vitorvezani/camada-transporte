@@ -1,7 +1,7 @@
 //
 //  meuprog.c
 //
-//  Guilherme Sividal - 09054512
+//  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 07/05/13.
@@ -22,11 +22,10 @@ int main(int argc, char const *argv[]) {
     int oper, env_no;
     char buffer[50];
 
-    int ic, ps, ret_fps;
-    char *arq;
+    struct ic ic;
 
-    int socket;
-    int ret;
+    int ps, ret_fps;
+    char *arq;
 
 	pch = (char*) malloc (128);
 
@@ -54,9 +53,32 @@ int main(int argc, char const *argv[]) {
     /* Se desapega da Thread */
     //pthread_detach(threadinicializarCamadas);
 
+
+
+    ps = aps();
+
+    if (ps == -1)
+        printf("Impossivel criar ps\n");
+    else
+        printf("ps criado '%d'\n", ps);
+
+    ic = conectar(env_no, ps);
+
+    if(ic.env_no == -1)
+        printf("Erro ao conectar, verifique  a existencia do ps\n");
+    else
+        printf("Conectado com sucesso!\n");
+
+
+    desconectar(ic);
+
+    baixar(ic, "arq.txt");
+
+
+/*
     //Pega os Dados digitado pelo usuario
 
-    printf("[MEUPROG] INFO: 1.aps, 2.fps, 3.conectar, 4.desconectar, 5.baixar, 6.sair\n");
+    printf("[MEUPROG] INFO: 1.aps(), 2.fps(ips), 3.conectar(no, ips), 4.desconectar(ic), 5.baixar(ic, nome_arq), 6.sair\n");
     while(oper != 6){
 
         printf("[MEUPROG] [oper] [nó] [data]: ");
@@ -70,14 +92,14 @@ int main(int argc, char const *argv[]) {
             pch = strtok(dados_aux, " ");
 
             oper = atoi(pch);
-/*
-        if(dados_aux[5] != NULL){ 
-     
-		        pch = strtok(NULL, "");
 
-		        strcpy(buffer, pch);
-			}
-*/
+//      if(dados_aux[5] != NULL){ 
+//   
+//	        pch = strtok(NULL, "");
+
+//	        strcpy(buffer, pch);
+//		}
+
             
             switch (oper){
                 case 1:
@@ -110,6 +132,11 @@ int main(int argc, char const *argv[]) {
 
                     ic = conectar(env_no, ps);
 
+                    if(ic.env_no == -1)
+                        printf("Erro ao conectar, verifique  a existencia do ps\n");
+                    else
+                        printf("Conectado com sucesso!\n");
+
                 break;
 
                 case 4:
@@ -136,6 +163,7 @@ int main(int argc, char const *argv[]) {
 
         } else
             printf("[MEUPROG] data[0] ou data[2] não é um int\n");
+*/
 
         // TESTE DE RETORNO DA CAMADA DE REDE
         /*
@@ -152,24 +180,8 @@ int main(int argc, char const *argv[]) {
 
         pthread_mutex_unlock(&mutex_apli_trans_env1);
          */
-    }
-/*
-    printf("Vou criar um socket!\n");
+//    }
 
-    socket = aps();
-
-    printf("Criei um socket ID: '%d'\n", socket);
-
-    printf("Agora, vou deleta-lo!\n");
-
-    ret = fps(socket);
-
-    if (ret)
-        printf("Deletado com sucesso!\n");
-    else
-        printf("Socket não foi deletado\n");
-
-*/
 
     /* Espera a Thread terminar */
     pthread_join(threadinicializarCamadas, NULL);

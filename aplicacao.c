@@ -1,7 +1,7 @@
 //
 //  aplicacao.c
 //
-//  Guilherme Sividal - 09054512
+//  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
 //
 //  Created by Vitor Vezani on 06/05/13.
@@ -101,50 +101,67 @@ int fps(int num_ps){
     return 1;
 }
 
-int conectar(int env_no, int ps){
-    int ic;
+struct ic conectar(int env_no, int num_ps){
+
+    struct ic ic;
+
+    int i;
+    int flag_existe = 0;
 
     struct pacote pacote_env;
 
-    printf("Recebi pedido para conectar no no : '%d', ps '%d'\n", env_no, ps);
+    printf("Recebi pedido para conectar no no : '%d', ps '%d'\n", env_no, num_ps);
 
-    /* Produzir buffer_rede_enlace_env */
-    pthread_mutex_lock(&mutex_apli_trans_env1);
+    for (i = 0; i < MAX_PS; i++)
+        if (ps[num_ps] == 1)
+            flag_existe = 1;
 
-    colocarPacotesBufferApliTransEnv(pacote_env);
+    if (flag_existe == 1)
+    {
+        /* Produzir buffer_rede_enlace_env */
+        pthread_mutex_lock(&mutex_apli_trans_env1);
 
-    pacote_env.tipo = CONECTAR;
+            pacote_env.tipo = CONECTAR;
 
-    /* Produzir buffer_rede_enlace_env */
-    pthread_mutex_unlock(&mutex_apli_trans_env2);
+        colocarPacotesBufferApliTransEnv(pacote_env);
 
-    /* Consome resposta da camada de enlace */
-    pthread_mutex_lock(&mutex_apli_trans_env1);
+        /* Produzir buffer_rede_enlace_env */
+        pthread_mutex_unlock(&mutex_apli_trans_env2);
 
-    retornoTransporte(pacote_env);
+        /* Consome resposta da camada de enlace */
+        pthread_mutex_lock(&mutex_apli_trans_env1);
 
-    ic = pacote_env.retorno;
+            retornoTransporte(pacote_env);
 
-    /* Consome resposta da camada de enlace */
-    pthread_mutex_unlock(&mutex_apli_trans_env1);
+        /* Consome resposta da camada de enlace */
+        pthread_mutex_unlock(&mutex_apli_trans_env1);
 
-    return ic;
+        ic.end_buffer = pacote_env.retorno;
+        ic.env_no = env_no;
+        ic.ps = num_ps;
+    
+        return ic;
+
+    }else{
+
+        ic.env_no = -1;
+        return ic;
+
+    }
 }
 
-int desconectar(int ic){
+int desconectar(struct ic ic){
 
     struct pacote pacote_env;
 
-    printf("Recebi pedido para desconectar do ic '%d'\n", ic);
+    printf("Recebi pedido para desconectar do env_no: '%d' e ps: '%d'\n",ic.env_no, ic.ps);
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_lock(&mutex_apli_trans_env1);
 
-    colocarPacotesBufferApliTransEnv(pacote_env);
+        colocarPacotesBufferApliTransEnv(pacote_env);
 
-    pacote_env.tipo = DESCONECTAR;
-
-    pacote_env.ic = ic;
+        pacote_env.tipo = DESCONECTAR;
 
     /* Produzir buffer_rede_enlace_env */
     pthread_mutex_unlock(&mutex_apli_trans_env2);
@@ -152,7 +169,7 @@ int desconectar(int ic){
     /* Consome resposta da camada de enlace */
     pthread_mutex_lock(&mutex_apli_trans_env1);
 
-    retornoTransporte(pacote_env);
+        retornoTransporte(pacote_env);
 
     /* Consome resposta da camada de enlace */
     pthread_mutex_unlock(&mutex_apli_trans_env1);
@@ -160,10 +177,11 @@ int desconectar(int ic){
     return 1;
 }
 
-void baixar(int ic, void *arq){
+void baixar(struct ic ic, char *arq){
 
     //Produz no buffer apli_trans
     pthread_mutex_lock(&mutex_apli_trans_env1);
+
 
 
     //Produz no buffer apli_trans
@@ -189,10 +207,11 @@ void retirarPacotesBufferApliTransRcv(struct pacote *pacote) {
 void retornoTransporte(struct pacote pacote){
     
     // Não houve erro de malloc ou free
-    if (pacote.retorno != -1)
+    if (pacote.retorno != NULL)
+
         if (pacote.tipo == CONECTAR)
         {
-            printf("Conexão estabelecida com sucesso! end_buffer: '%d' \n", pacote.retorno);
+            printf("Conexão estabelecida com sucesso! end_buffer: '%p' \n", pacote.retorno);
         }else if (pacote.tipo == DESCONECTAR)
         {
             printf("Conexão encerrada com sucesso!\n");
