@@ -21,16 +21,16 @@
 
 #define CONECTAR            0
 #define DESCONECTAR         1
-#define BAIXAR              2
+#define DADOS               2
 
 #define TRUE 	            1
 #define FALSE	            0
 
-#define TAM_MAX_BUFFER      1400
+#define TAM_MAX_BUFFER      2000
 
 #define TAM_SEGMENT         250
-#define TAM_JANELA          2000
-#define TAM_BUFFER_TRANS    4000
+#define TAM_JANELA          1000
+#define TAM_BUFFER_TRANS    6000
 
 #define NOS                 1
 #define ENLACES             2
@@ -38,7 +38,7 @@
 #define MAX_BUFFERS_DESFRAG 5
 #define MAX_PS              10
 
-#define INFINITO 999999
+#define INFINITO            999999
 
 //#define DEBBUG_ARQUIVO
 //#define DEBBUG_ENLACE
@@ -56,8 +56,9 @@ int flag_id; 			// Inicializa ID em 1
 int flag_iniciei; 		// Enviar tabela de rotas à vizinhos
 int flag_saida; 		// Qual nó enviar
 int ps[10];             // Estrutura do PS
+int ic[10];             // Estrutura contendo os IC do nó
 int ack;                // Ack
-int sync;               // Sync
+int syn;                // Sync
 
 pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
 pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
@@ -76,14 +77,15 @@ pthread_mutex_t mutex_trans_acess_exc_timer;
 
 /* Estrutura do ic */
 struct ic {
+    int num;
     int env_no;
+    int num_no;
     int ps;
     char * end_buffer;
 };
 
 /* Estrutura do pacote */
 struct pacote {
-
     int tipo;
     int tam_buffer;
     char * retorno;
@@ -91,31 +93,30 @@ struct pacote {
 
 };
 
+/* Estrutura do buffer entre aplicacao e transporte */
 struct buffer_apli_trans {
-
+    struct ic ic;
     int tam_buffer;
     int tipo;
     int env_no;
-    int retorno;
+    char * retorno;
     struct pacote data;
 
 };
 
-/* Estrutura do buffer entre transporte e rede */
+/* Estrutura do buffer interno à camada de transporte */
 struct buffer_trans_trans {
-    int num_buffer;
     int tam_buffer;
-    int env_no;
-    int retorno;
+    struct ic ic;
     struct pacote data;
 };
 
 /* Estrutura do segmento */
 struct segmento {
-    int flag_sync;
-    int flag_push;
     int flag_ack;
     int flag_connect;
+    int flag_syn;
+    int flag_push;
     int ack;
     int seqnum;
     int num_no;
@@ -215,6 +216,7 @@ void *receberFrames();
 
 //Threads da Camada de Rede
 void *enviarTabelaRotas();
+void *enviarTabelaRotasJob();
 void *receberTabelaRotas();
 void *receberDatagramas();
 void *receberSegmento();
@@ -259,7 +261,7 @@ void colocarDatagramaBufferTransRedeEnv(struct datagrama datagrama);
 void colocarDatagramaBufferTransRedeRcv(struct datagrama datagrama);
 
 void colocarDatagramaBufferRedeEnlaceEnv(struct datagrama datagrama);
-int retornoEnlace(struct datagrama datagram);
+int retornoEnlace();
 
 void resetarBuffer(struct datagrama *datagram);
 
@@ -269,9 +271,9 @@ void enviarTabelaRotasVizinhos(struct datagrama *datagram);
 
 //Funções da Camada de Transporte
 void colocarPacoteBufferApliTransRcv(struct pacote pacote);
-void retirarPacoteBufferApliTransEnv(struct pacote *pacote);
+void retirarPacoteBufferApliTransEnv(struct pacote *pacote, struct ic *ic);
 
-void colocarPacoteBufferTransTransEnv(struct pacote pacote);
+void colocarPacoteBufferTransTransEnv(struct pacote package, struct ic ic);
 void retirarPacoteBufferTransTransRcv(struct pacote *pacote);
 
 void colocarSegmentoBufferTransTransRcv(struct segmento segment, int seqnum);
@@ -281,13 +283,13 @@ void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
 
 //Funções da Camada de Aplicacao
-void colocarPacotesBufferApliTransEnv(struct pacote pacote);
+void colocarPacotesBufferApliTransEnv(struct pacote pacote, struct ic ic);
 void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
-void retornoTransporte(struct pacote pacote);
+void retornoTransporte();
 
 //Funções da Camada de Aplicacao (API)
 int aps();
 int fps(int num_ps);
 struct ic conectar(int env_no, int ps);
 int desconectar(struct ic ic);
-void baixar(struct ic ic, char *arq);
+void enviar(struct ic ic, char *arq);

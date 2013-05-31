@@ -52,6 +52,8 @@ void *inicializarCamadas() {
     /* Inicializar Mutex Sincronismo Apli_Trans Receber */
     pthread_mutex_init(&mutex_apli_trans_rcv1, NULL);
     pthread_mutex_init(&mutex_apli_trans_rcv2, NULL);
+    /* Inicializar Mutex Sincronismo Apli_Trans Receber */  
+    pthread_mutex_init(&env_seg_rcv_seg_timer_2, NULL);
 
     /* Inicialização de Mutex Consumidores */
     pthread_mutex_lock(&mutex_rede_rede_receberotas2);
@@ -90,7 +92,7 @@ void *inicializarCamadas() {
         exit(-1);
     }
 
-    usleep(1000);
+    usleep(4000);
 
     /* Inicia a thread iniciarRede */
     tr = pthread_create(&threadIniciaRede, NULL, iniciarRede, NULL);
@@ -100,7 +102,7 @@ void *inicializarCamadas() {
         exit(-1);
     }
 
-    usleep(1000);
+    usleep(4000);
 
     /* Inicia a thread iniciarTransporte */
     ttr = pthread_create(&threadIniciaTransporte, NULL, iniciarTransporte, NULL);
@@ -110,7 +112,7 @@ void *inicializarCamadas() {
         exit(-1);
     }
 
-    usleep(1000);
+    usleep(4000);
 
     /* Inicia a thread iniciarAplicacao */
     tap = pthread_create(&threadIniciaAplicacao, NULL, iniciarAplicacao, NULL);
@@ -119,6 +121,8 @@ void *inicializarCamadas() {
         printf("ERRO: impossivel criar a thread : iniciarAplicacao\n");
         exit(-1);
     }
+
+    usleep(4000);
 
     /* Espera as threads terminarem */
     pthread_join(threadIniciaEnlace, NULL);

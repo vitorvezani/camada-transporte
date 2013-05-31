@@ -305,9 +305,25 @@ void *enviarSegmento() {
     }
 }
 
+void *enviarTabelaRotasJob() {
+
+    while (TRUE){
+
+        struct datagrama datagrama_env;
+
+        sleep(rand() % 15 + 25);
+
+        montarDatagramaTabelaRotas(&datagrama_env);
+
+        enviarTabelaRotasVizinhos(&datagrama_env);
+
+    }
+}
+
 void *enviarTabelaRotas() {
 
-    int i;
+    int i, tetrj;
+    pthread_t threadEnviarTabelaRotasJob;
 
     while (TRUE) {
 
@@ -315,6 +331,16 @@ void *enviarTabelaRotas() {
 
         /* Executando pela primeira vez */
         if (flag_iniciei == 1) {
+
+            /* Inicia a thread threadEnviarTabelaRotasJob */
+            tetrj = pthread_create(&threadEnviarTabelaRotasJob, NULL, enviarTabelaRotasJob, NULL);
+
+            if (tetrj) {
+                printf("ERRO: impossivel criar a thread : enviarTabelaRotasJob\n");
+                exit(-1);
+            }
+
+            pthread_detach(threadEnviarTabelaRotasJob);
 
             montarDatagramaTabelaRotas(&datagrama_env_inicial);
 
@@ -416,6 +442,7 @@ void enviarTabelaRotasVizinhos(struct datagrama *datagram) {
             pthread_mutex_unlock(&mutex_rede_rede_env2);
         }
     }
+    tabela_rotas[1].quem_enviou = -1;
 }
 
 void retirarDatagramaBufferRedeRedeRcv(struct datagrama *datagram) {
@@ -632,11 +659,11 @@ void retirarSegmentoBufferTransRedeEnv(struct datagrama *datagram) {
 
     memcpy(&(datagram->data), &buffer_trans_rede_env.data, sizeof (buffer_trans_rede_env.data));
 
-    datagram->type = 1;
-    datagram->env_no = buffer_trans_rede_env.env_no;
-    datagram->tam_buffer = buffer_trans_rede_env.tam_buffer;
-    datagram->offset = 0;
-    datagram->mf = -1;
+    datagram->type        = 1;
+    datagram->env_no      = buffer_trans_rede_env.env_no;
+    datagram->tam_buffer  = buffer_trans_rede_env.tam_buffer;
+    datagram->offset      = 0;
+    datagram->mf          = -1;
 
 }
 
@@ -650,7 +677,7 @@ void retirarDatagramaBufferRedeRedeEnv(struct datagrama *datagram) {
 
 }
 
-int retornoEnlace(struct datagrama datagrama_env) {
+int retornoEnlace() {
 
         /* Testa o retorno da camada de enlace */
         if (buffer_rede_enlace_env.retorno == 0) {
@@ -687,7 +714,7 @@ void resetarBuffer(struct datagrama *datagram) {
 
 void montarDatagramaTabelaRotas(struct datagrama *datagram) {
 
-    datagram->tam_buffer = 10; // MUDAR PARA SIZEOF(tabela_rotas)
+    datagram->tam_buffer = 10;//= sizeof(tabela_rotas);
     datagram->offset = 0;
     datagram->id = flag_id;
     datagram->mf = -1;

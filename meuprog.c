@@ -19,12 +19,16 @@ int main(int argc, char const *argv[]) {
     char *pch;
     pthread_t threadinicializarCamadas;
 
-    int oper, env_no;
+    int oper; 
+
+    int env_no = 2;
+
     char buffer[50];
 
     struct ic ic;
 
     int ps, ret_fps;
+
     char *arq;
 
 	pch = (char*) malloc (128);
@@ -48,12 +52,15 @@ int main(int argc, char const *argv[]) {
         exit(-1);
     }
 
-    usleep(4000);
+    usleep(20000);
 
     /* Se desapega da Thread */
     //pthread_detach(threadinicializarCamadas);
 
+if (file_info.num_no == 1)
+{
 
+    fflush(stdin);
 
     ps = aps();
 
@@ -69,11 +76,10 @@ int main(int argc, char const *argv[]) {
     else
         printf("Conectado com sucesso!\n");
 
+    //desconectar(ic);
 
-    desconectar(ic);
-
-    baixar(ic, "arq.txt");
-
+    enviar(ic, "hiuhaiuaiuahauihauihiauhauikoekepkepekoekeopkeopekpeokepeyauwguyagwyuwguywagwuyguyagwawyujnaskjnajsknasjknajknsajknsjnajknsjakgeyueyueyugeyuegueygeuyegeyuegeyugeeutqwyqtwytqywtqywqywtqywtqywtyqtwyqtytqwabsvabsvabsvabsvbasvabsvbasvabsvabskoekeokekeoekeokeoekeokeoeoekeoeldpdlpdldpldpdldpdldpldpdldpdldpldpgsysgysgsygsysgsysgsysgysgsyyssgysgsgysgahjsdghjaskdggahjskdgjhaksdgahjksdghjkasdgjhkasdghjkasdghjkasdghkjzxcjkl;zxcjkl;zxcj;klzxcjkl;zxcjkl;zxcjkl;zxcjkl;zxcklz;xcasdhlkjasdhlkjasdhlkjasdhjklasdqweyoiuqweyuiqoweyuoiqweuyioqweewrp[oiweriop[werio[pwer[ipowersfjskl;dfjskl;djfl;jsdfkl");
+}
 
 /*
     //Pega os Dados digitado pelo usuario
@@ -96,7 +102,7 @@ int main(int argc, char const *argv[]) {
 //      if(dados_aux[5] != NULL){ 
 //   
 //	        pch = strtok(NULL, "");
-
+//
 //	        strcpy(buffer, pch);
 //		}
 
@@ -182,6 +188,8 @@ int main(int argc, char const *argv[]) {
          */
 //    }
 
+
+    printf("Esperando thread threadinicializarCamadas terminar\n");
 
     /* Espera a Thread terminar */
     pthread_join(threadinicializarCamadas, NULL);
