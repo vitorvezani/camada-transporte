@@ -79,12 +79,12 @@ void *iniciarRede() {
     pthread_mutex_destroy(&mutex_buffer_rede_rcv);
 
     /* Espera as threads terminarem */
-    pthread_join(threadEnviarTabelaRotas, NULL);
+    pthread_join(threadEnviarTabelaRotas , NULL);
     pthread_join(threadReceberTabelaRotas, NULL);
-    pthread_join(threadReceberSegmento, NULL);
-    pthread_join(threadReceberDatagramas, NULL);
-    pthread_join(threadEnviarDatagrama, NULL);
-    pthread_join(threadEnviarSegmento, NULL);
+    pthread_join(threadReceberSegmento   , NULL);
+    pthread_join(threadReceberDatagramas , NULL);
+    pthread_join(threadEnviarDatagrama   , NULL);
+    pthread_join(threadEnviarSegmento    , NULL);
 }
 
 void *receberSegmento() {
@@ -177,7 +177,7 @@ void enviarDatagramaNoNaoV(struct datagrama datagram) {
 
 #ifdef DEBBUG_ROTEAMENTO
 
-            printf("Após analizar tabela de rotas sei que para enviar pacote para o '%d' preciso enviar para o nó  '%d'\n",datagram.env_no, 
+            printf("[REDE - ROT]Após analizar tabela de rotas sei que para enviar datagrama para o '%d' preciso enviar para o nó  '%d'\n",datagram.env_no, 
                 tabela_rotas[i].saida);
 
 #endif
@@ -270,7 +270,7 @@ void *receberDatagramas() {
             /* Produzir buffer_rede_rede_env */
             pthread_mutex_lock(&mutex_rede_rede_env1);
 
-            printf("Repassando datagrama ao nó '%d'!\n", datagrama_rcv.env_no);
+            printf("[REDE - RECEBER]Repassando datagrama nó dts: '%d', nó inicial: '%d'!\n", datagrama_rcv.env_no, datagrama_rcv.num_no);
 
             colocarDatagramaBufferRedeRedeEnv(datagrama_rcv);
 
@@ -393,7 +393,7 @@ void atualizarTabelaRotas(struct datagrama datagram) {
     /* Salva quem enviou para não enviar para esse nó*/
     tabela_rotas[1].quem_enviou = datagram.num_no;
 
-    printf("Recebi tabela de rotas do nó '%d'\n", tabela_rotas[1].quem_enviou);
+    printf("[REDE - ROT]Recebi tabela de rotas do nó '%d'\n", tabela_rotas[1].quem_enviou);
 
     for (i = 0; i < 6; i++) {
 
@@ -434,7 +434,7 @@ void enviarTabelaRotasVizinhos(struct datagrama *datagram) {
             datagram->env_no = nos_vizinhos[i];
             datagram->num_no = file_info.num_no;
 
-            printf("Enviei Tabela de Rotas para o nó '%d'\n", nos_vizinhos[i]);
+            printf("[REDE - ROT]Enviei Tabela de Rotas para o nó '%d'\n", nos_vizinhos[i]);
 
             colocarDatagramaBufferRedeRedeEnv(*datagram);
 
@@ -661,6 +661,7 @@ void retirarSegmentoBufferTransRedeEnv(struct datagrama *datagram) {
 
     datagram->type        = 1;
     datagram->env_no      = buffer_trans_rede_env.env_no;
+    datagram->num_no      = file_info.num_no;
     datagram->tam_buffer  = buffer_trans_rede_env.tam_buffer;
     datagram->offset      = 0;
     datagram->mf          = -1;
@@ -714,7 +715,7 @@ void resetarBuffer(struct datagrama *datagram) {
 
 void montarDatagramaTabelaRotas(struct datagrama *datagram) {
 
-    datagram->tam_buffer = 10;//= sizeof(tabela_rotas);
+    datagram->tam_buffer = sizeof(tabela_rotas);
     datagram->offset = 0;
     datagram->id = flag_id;
     datagram->mf = -1;
@@ -781,7 +782,7 @@ void montarTabelaRotasInicial() {
 
 #ifdef DEBBUG_MONTAR_TABELA
     for (i = 0; i < 6; i++) {
-        printf("tabela_rotas[%d]].destino: '%d', tabela_rotas[%d]].custo: '%d', tabela_rotas[%d]].saida: '%d'\n", i,
+        printf("[REDE - MONTAR TABELA]tabela_rotas[%d]].destino: '%d', tabela_rotas[%d]].custo: '%d', tabela_rotas[%d]].saida: '%d'\n", i,
                 tabela_rotas[i].destino, i, tabela_rotas[i].custo, i, tabela_rotas[i].saida);
     }
 #endif

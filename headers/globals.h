@@ -15,6 +15,7 @@
 #include <stdlib.h>			/* para exit() */
 #include <sys/socket.h>     /* para sockets */
 #include <netinet/in.h>     /* para protocols */
+#include <arpa/inet.h>
 
 // Defines
 #define MAXNOS              6
@@ -28,8 +29,8 @@
 
 #define TAM_MAX_BUFFER      2000
 
-#define TAM_SEGMENT         250
-#define TAM_JANELA          1000
+#define TAM_SEGMENT         15
+#define TAM_JANELA          TAM_SEGMENT * 4
 #define TAM_BUFFER_TRANS    6000
 
 #define NOS                 1
@@ -48,6 +49,7 @@
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
 #define DEBBUG_TRANSPORTE
+//#define DEBBUG_TRANSPORTE_FLAGS
 
 // Variaveis Globais
 
@@ -90,7 +92,6 @@ struct pacote {
     int tam_buffer;
     char * retorno;
     char buffer[TAM_MAX_BUFFER];
-
 };
 
 /* Estrutura do buffer entre aplicacao e transporte */
@@ -108,7 +109,7 @@ struct buffer_apli_trans {
 struct buffer_trans_trans {
     int tam_buffer;
     struct ic ic;
-    struct pacote data;
+    char data[TAM_BUFFER_TRANS];
 };
 
 /* Estrutura do segmento */
@@ -282,14 +283,16 @@ void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum
 void colocarSegmentoBufferTransRedeEnv(struct segmento segment);
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment);
 
+void montarSegmentoAck(struct segmento *segment, struct segmento segment_rcv, int expectedseqnum);
+
 //Funções da Camada de Aplicacao
 void colocarPacotesBufferApliTransEnv(struct pacote pacote, struct ic ic);
 void retirarPacotesBufferApliTransRcv(struct pacote *pacote);
 void retornoTransporte();
 
-//Funções da Camada de Aplicacao (API)
+//Funções da Camada de Aplicacao
 int aps();
 int fps(int num_ps);
 struct ic conectar(int env_no, int ps);
 int desconectar(struct ic ic);
-void enviar(struct ic ic, char *arq);
+void baixar(struct ic ic, char *arq);

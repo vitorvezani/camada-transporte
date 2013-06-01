@@ -60,7 +60,7 @@ int main(int argc, char const *argv[]) {
 if (file_info.num_no == 1)
 {
 
-    fflush(stdin);
+    getchar();
 
     ps = aps();
 
@@ -69,6 +69,8 @@ if (file_info.num_no == 1)
     else
         printf("ps criado '%d'\n", ps);
 
+    getchar();
+
     ic = conectar(env_no, ps);
 
     if(ic.env_no == -1)
@@ -76,9 +78,11 @@ if (file_info.num_no == 1)
     else
         printf("Conectado com sucesso!\n");
 
+    getchar();
+
     //desconectar(ic);
 
-    enviar(ic, "hiuhaiuaiuahauihauihiauhauikoekepkepekoekeopkeopekpeokepeyauwguyagwyuwguywagwuyguyagwawyujnaskjnajsknasjknajknsajknsjnajknsjakgeyueyueyugeyuegueygeuyegeyuegeyugeeutqwyqtwytqywtqywqywtqywtqywtyqtwyqtytqwabsvabsvabsvabsvbasvabsvbasvabsvabskoekeokekeoekeokeoekeokeoeoekeoeldpdlpdldpldpdldpdldpldpdldpdldpldpgsysgysgsygsysgsysgsysgysgsyyssgysgsgysgahjsdghjaskdggahjskdgjhaksdgahjksdghjkasdgjhkasdghjkasdghjkasdghkjzxcjkl;zxcjkl;zxcj;klzxcjkl;zxcjkl;zxcjkl;zxcjkl;zxcklz;xcasdhlkjasdhlkjasdhlkjasdhjklasdqweyoiuqweyuiqoweyuoiqweuyioqweewrp[oiweriop[werio[pwer[ipowersfjskl;dfjskl;djfl;jsdfkl");
+    baixar(ic, "Linux é um termo utilizado para se referir a sistemas operativos (português europeu) ou sistemas operacionais (português brasileiro) que utilizem o núcleo Linux. O núcleo Linux foi desenvolvido pelo programador finlandês Linus Torvalds, inspirado no sistema Minix. O seu código fonte está disponível sob a licença GPL (versão 2) para que qualquer pessoa o possa utilizar, estudar, modificar e distribuir livremente de acordo com os termos da licença.");
 }
 
 /*

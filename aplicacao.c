@@ -67,8 +67,12 @@ void *receberPacotes() {
 
             retirarPacotesBufferApliTransRcv(&pacote_rcv);
 
-            printf("[APLIC - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", pacote_rcv.tam_buffer,
+            if (strlen(pacote_rcv.buffer) >= pacote_rcv.tam_buffer)
+            {
+                printf("[APLIC - RECEBER] Tam_buffer: '%d' Bytes, Buffer: '%s'\n", pacote_rcv.tam_buffer,
                     pacote_rcv.buffer);
+            }
+
         }
 
         //Destrava mutex de sinconismo
@@ -175,7 +179,7 @@ int desconectar(struct ic ic) {
     return 1;
 }
 
-void enviar(struct ic ic, char *arq) {
+void baixar(struct ic ic, char *arq) {
 
     struct pacote pacote_env;
 
@@ -187,9 +191,9 @@ void enviar(struct ic ic, char *arq) {
 
     pacote_env.tipo = DADOS;
     pacote_env.tam_buffer = strlen(arq);
-    strncpy(pacote_env.buffer, arq, strlen(arq) + 1);
+    strncpy(pacote_env.buffer, arq, strlen(arq));
 
-    pacote_env.buffer[strlen(pacote_env.buffer) - 1] = '\0';
+    pacote_env.buffer[strlen(arq) + 1] = '\0';
 
     colocarPacotesBufferApliTransEnv(pacote_env, ic);
 

@@ -101,9 +101,10 @@ void *enviarFrames() {
 #endif
 
                         /*seta o IP e Porta do nó destino no sockaddr_in 'to' */
+
                         to.sin_family = AF_INET;
-                        to.sin_port = htons(atoi(ligacao.nos[i][2])); /* Porta do nó
-                        to.sin_addr.s_addr = inet_addr(ligacao.nos[i][1]); /* Endereço IP do nó
+                        to.sin_port = htons(atoi(ligacao.nos[i][2])); /* Porta do nó */
+                        to.sin_addr.s_addr = inet_addr(ligacao.nos[i][1]); /* Endereço IP do nó */
 
 #ifdef DEBBUG_ENLACE
                         printf("[ENLACE] Nó Configurado\n");
@@ -137,7 +138,7 @@ void *enviarFrames() {
 #endif
 
                         /*Setar as variaveis L,C,D do garbler */
-                        set_garbler(30, 0, 0);
+                        set_garbler(8, 8, 8);
 
                         /*Funcão que envia para o nó destino o Frame */
                         if (sendto_garbled(s, &frame_env, sizeof (frame_env), 0, (struct sockaddr *) &to, sizeof (to)) < 0) {
@@ -179,6 +180,7 @@ void *receberFrames() {
     }
 
     /*Loop nos nós para achar o IP e Porta de seu nó */
+
     for (i = 0; i < 6; i++) {
 
         /*Transforma char para int */
@@ -188,6 +190,7 @@ void *receberFrames() {
         if (atoi_result == file_info.num_no) {
 
             /* seta o IP e Porta de seu nó no sockaddr_in 'server' */
+
             server.sin_family = AF_INET;
             server.sin_port = htons(atoi(ligacao.nos[i][2])); /* Porta do servidor */
             server.sin_addr.s_addr = inet_addr(ligacao.nos[i][1]); /* Endereço IP do servidor */
@@ -199,6 +202,10 @@ void *receberFrames() {
         perror("bind()");
         exit(1);
     }
+
+#ifdef DEBBUG_ENLACE
+    printf("\nBind no IP: %s e Porta %d\n\n",inet_ntoa(server.sin_addr),ntohs(server.sin_port));
+#endif
 
     while (TRUE) {
 
