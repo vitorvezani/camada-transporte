@@ -176,7 +176,15 @@ void *enviarSegmentos() {
             printf("[TRANS - ENV] Vou enviar a Janela\n");
         #endif
 
-        first_pkg = 1;
+
+        //Inicia a thread timer
+        tt = pthread_create(&threadTimer, NULL, timer, NULL);
+
+        //Dispara Thread timer
+        if (tt) {
+            printf("ERRO: impossivel criar a thread : timer\n");
+            exit(-1);
+        }
 
         while (nextseqnum < base + TAM_JANELA) {
             
@@ -206,9 +214,12 @@ void *enviarSegmentos() {
 
             colocarSegmentoBufferTransRedeEnv(segmento_env);
 
-#ifdef DEBBUG_TRANSPORTE_FLAGS
+#ifdef DEBBUG_TRANSPORTE
 
             printf("[TRANS - ENV] Mandei um Segmento\n");
+#endif
+
+#ifdef DEBBUG_TRANSPORTE_FLAGS
             printf("[TRANS - ENV] flag_push = '%d'\n", segmento_env.flag_push);
             printf("[TRANS - ENV] env_no = '%d'\n", segmento_env.env_no);
             printf("[TRANS - ENV] tam_buffer = '%d'\n", buffer_trans_rede_env.tam_buffer);
@@ -218,42 +229,25 @@ void *enviarSegmentos() {
             /* Produzir buffer_trans_rede_env */
             pthread_mutex_unlock(&mutex_trans_rede_env2);
 
-            if (first_pkg) { 
-
-                //Inicia a thread timer
-                tt = pthread_create(&threadTimer, NULL, timer, NULL);
-
-                //Dispara Thread timer
-                if (tt) {
-                    printf("ERRO: impossivel criar a thread : timer\n");
-                    exit(-1);
-                }
-
-                first_pkg = 0;
-            }
-
             nextseqnum += TAM_SEGMENT;
 
         }
+        printf("locked\n");
 
         /* Produzir buffer_trans_rede_env */
         pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
+            printf("unlocked\n");
+
+#ifdef DEBBUG_TRANSPORTE
         if (ack != -1 || syn == 1)
-        {
-            #ifdef DEBBUG_TRANSPORTE
             printf("[TRANS - ENV] Desbloquei pelo ack ou syn!!\n");
-            #endif
-        }else{
-            #ifdef DEBBUG_TRANSPORTE
+        else
             printf("[TRANS - ENV] Desbloquei pelo Timer!!\n");
-            #endif
-        }
+#endif
 
         // Se o timer nao estourou, anda com a janela
         if (ack != -1) {
-
-            pthread_cancel(threadTimer);
 
             base = ack;
 
@@ -279,7 +273,10 @@ void *enviarSegmentos() {
 #endif
 
             nextseqnum = base;
+
         }
+        pthread_cancel(threadTimer);
+        printf("else bla bla bla\n");
     }
 }
 

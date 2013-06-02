@@ -29,7 +29,7 @@
 
 #define TAM_MAX_BUFFER      2000
 
-#define TAM_SEGMENT         15
+#define TAM_SEGMENT         10
 #define TAM_JANELA          TAM_SEGMENT * 4
 #define TAM_BUFFER_TRANS    6000
 
