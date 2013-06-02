@@ -120,7 +120,9 @@ void *enviarFrames() {
 
                         /*Testa tam dos dados vs MTU do nó */
                         if (frame_env.tam_buffer > mtu) {
+                            #ifdef DEBBUG
                             printf("[ENLACE] ERRO de MTU Tamanho: '%d', MTU: '%d'\n", frame_env.tam_buffer, mtu);
+                            #endif
                             buffer_rede_enlace_env.retorno = mtu;
                             flag = 2;
                             break;
@@ -138,7 +140,7 @@ void *enviarFrames() {
 #endif
 
                         /*Setar as variaveis L,C,D do garbler */
-                        set_garbler(0, 0, 0);
+                        set_garbler(3, 3, 3);
 
                         /*Funcão que envia para o nó destino o Frame */
                         if (sendto_garbled(s, &frame_env, sizeof (frame_env), 0, (struct sockaddr *) &to, sizeof (to)) < 0) {

@@ -1,12 +1,12 @@
-//
+// 
 //  transporte.c
-//
+// 
 //  Guilherme Sividal    - 09054512
 //  Vitor Rodrigo Vezani - 10159861
-//
+// 
 //  Created by Vitor Vezani on 07/04/13.
 //  Copyright (c) 2013 Vitor Vezani. All rights reserved.
-//
+// 
 
 #include "headers/globals.h"
 
@@ -18,7 +18,7 @@ void *iniciarTransporte() {
 
     buffer_trans_trans_rcv.data = (char *) malloc(sizeof (TAM_BUFFER_TRANS));
 
-    //Inicia a thread enviarSegmentos
+    // Inicia a thread enviarSegmentos
     tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
 
     if (tes) {
@@ -26,7 +26,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread receberSegmentos
+    // Inicia a thread receberSegmentos
     trs = pthread_create(&threadReceberSegmentos, NULL, receberSegmentos, NULL);
 
     if (trs) {
@@ -34,7 +34,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread enviarPacote
+    // Inicia a thread enviarPacote
     tea = pthread_create(&threadEnviarPacote, NULL, enviarPacote, NULL);
 
     if (tea) {
@@ -42,7 +42,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Inicia a thread receberPacote
+    // Inicia a thread receberPacote
     tra = pthread_create(&threadReceberPacote, NULL, receberPacote, NULL);
 
     if (tra) {
@@ -50,7 +50,7 @@ void *iniciarTransporte() {
         exit(-1);
     }
 
-    //Espera as threads terminarem
+    // Espera as threads terminarem
     pthread_join(threadEnviarSegmentos, NULL);
     pthread_join(threadReceberSegmentos, NULL);
     pthread_join(threadEnviarPacote, NULL);
@@ -64,22 +64,20 @@ void *enviarPacote() {
 
         struct pacote pacote_rcv;
 
-        /* Consumir buffer_trans_trans_rcv */
+        // Consumir buffer_trans_trans_rcv
         pthread_mutex_lock(&mutex_trans_trans_rcv2);
 
             retirarPacoteBufferTransTransRcv(&pacote_rcv);
 
-        /* Consumir buffer_trans_trans_rcv */
+        // Consumir buffer_trans_trans_rcv
         pthread_mutex_unlock(&mutex_trans_trans_rcv1);
 
-        //TODO
-
-        /* Produzir buffer_apli_trans_rcv */
+        // Produzir buffer_apli_trans_rcv
         pthread_mutex_lock(&mutex_apli_trans_rcv1);
 
         colocarPacoteBufferApliTransRcv(pacote_rcv);
 
-        /* Produzir buffer_apli_trans_rcv */
+        // Produzir buffer_apli_trans_rcv
         pthread_mutex_unlock(&mutex_apli_trans_rcv2);
 
     }
@@ -92,48 +90,68 @@ void *receberPacote() {
         struct pacote pacote_env;
         struct ic ic;
 
-        /* Consumir buffer_apli_trans_env */
+        // Consumir buffer_apli_trans_env
         pthread_mutex_lock(&mutex_apli_trans_env2);
 
         retirarPacoteBufferApliTransEnv(&pacote_env, &ic);
 
+        /*  Se for CONECTAR, aloca o buffer, faz o ponteiro do buffer alocar para o buffer alocado,
+        // envia pacote de connect para o receptor
+        */
+
         if (buffer_apli_trans_env.tipo == CONECTAR) {
 
-            // Alocar Buffer
             buffer_trans_trans_env.data = (char *) malloc(sizeof (TAM_BUFFER_TRANS));
+
             buffer_apli_trans_env.retorno = buffer_trans_trans_env.data;
 
-            /* Produzir buffer_trans_trans_env */
+            // Produzir buffer_trans_trans_env
             pthread_mutex_lock(&mutex_trans_trans_env1);
 
                colocarPacoteBufferTransTransEnv(pacote_env, ic);
 
-            /* Produzir buffer_trans_trans_env */
+            // Produzir buffer_trans_trans_env
              pthread_mutex_unlock(&mutex_trans_trans_env2);
 
+        /* Caso seja DESCONECTAR desaloca o buffer */
+
         } else if (buffer_apli_trans_env.tipo == DESCONECTAR) {
+            char *aux;
 
             // LIBERAR BUFFER
-            free(buffer_apli_trans_env.retorno);
+
+            aux = buffer_apli_trans_env.ic.end_buffer;
+
+            free(ic.end_buffer);
+
+            buffer_apli_trans_env.retorno = aux;
+
+       /* Caso seja DADOS, envia pacote contendo os dados e o ic */
 
         } else if (buffer_apli_trans_env.tipo == DADOS) {
 
-            /* Produzir buffer_trans_trans_env */
+            // Produzir buffer_trans_trans_env
             pthread_mutex_lock(&mutex_trans_trans_env1);
 
                 colocarPacoteBufferTransTransEnv(pacote_env, ic);
 
-            /* Produzir buffer_trans_trans_env */
+            // Produzir buffer_trans_trans_env
             pthread_mutex_unlock(&mutex_trans_trans_env2);
+
+            //Unlock ao termino talvez?
 
         }
 
-    /* Consumir buffer_apli_trans_env */
+    // Consumir buffer_apli_trans_env
     pthread_mutex_unlock(&mutex_apli_trans_env1);
 
     }
 
 }
+
+    /*  Essa thread tem a função de ficar dormente por um tempo e caso ela eventualmente acorde, 
+    // terá a função de desbloquear a thread enviarSegmentos() fazendo que ela reenvie toda a janela.
+    */
 
 void *timer() {
 
@@ -143,14 +161,14 @@ void *timer() {
 
     sleep(1);
 
-    // Acorda a thread de enviar segmento
     pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
 
-    #ifdef DEBBUG_TRANSPORTE
-    printf("[TRANS - TIMER] Desbloquei com o Timer!!\n");
-    #endif
-
 }
+
+    /*  Essa thread tem como principal função enviar o segmentos do buffer interno à camada de transporte 
+    // para a camada de rede. É aonde está implementado o algoritmo da janela deslizante. 
+    // Recebe também alem do sinal de estouro de timer, os syn e acks da thread receberSegmentos.
+    */
 
 void *enviarSegmentos() {
 
@@ -164,13 +182,12 @@ void *enviarSegmentos() {
     ack = -1;
     syn = -1;
 
-
-    /* Consumir buffer_trans_trans_env */
+    // Consumir buffer_trans_trans_env
     pthread_mutex_lock(&mutex_trans_trans_env2);
 
     while (TRUE){
 
-        // Dados a ser considerado
+        // Dados a ser considerado como fim do envio
         if (base > (sizeof (buffer_trans_trans_env) + TAM_BUFFER_TRANS) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer) ||
             syn == 1)
         {
@@ -179,17 +196,18 @@ void *enviarSegmentos() {
         printf("[TRANS - ENV FIM DA JANELA] sizeof(buffer): '%zd', base final: '%d', nextseqnum final: '%d'\n", (sizeof (buffer_trans_trans_env) + TAM_BUFFER_TRANS) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer), base, nextseqnum);
         #endif
 
-        //Reinicialização das variaveis
+        // Reinicialização das variaveis
         base = 0;
         nextseqnum = 0;
         ack = -1;
         syn = -1;
 
-        /* Consumir buffer_trans_trans_env */
+        // Consumir buffer_trans_trans_env
         pthread_mutex_lock(&mutex_trans_trans_env2);
 
         }
 
+        // Dados ou Conectar?
         tipo = buffer_apli_trans_env.tipo;
 
         #ifdef DEBBUG_TRANSPORTE
@@ -197,10 +215,10 @@ void *enviarSegmentos() {
             printf("[TRANS - ENV] Vou enviar a Janela\n");
         #endif
 
-        //Inicia a thread timer
+        // Inicia a thread timer
         tt = pthread_create(&threadTimer, NULL, timer, NULL);
 
-        //Dispara Thread timer
+        // Dispara Thread timer
         if (tt) {
             printf("ERRO: impossivel criar a thread : timer\n");
             exit(-1);
@@ -216,17 +234,17 @@ void *enviarSegmentos() {
 
             retirarSegmentoBufferTransTransEnv(&segmento_env, nextseqnum);
 
-            /* Consumir buffer_trans_trans_env */
+            // Consumir buffer_trans_trans_env
             pthread_mutex_unlock(&mutex_trans_trans_env1);
 
-            /* Produzir buffer_trans_rede_env */
+            // Produzir buffer_trans_rede_env
             pthread_mutex_lock(&mutex_trans_rede_env1);
 
             // Envia os segmentos da janela
 
             switch(tipo){
                 case CONECTAR:
-                    segmento_env.tam_buffer = sizeof (segmento_env) - TAM_MAX_BUFFER; //Tamanho de segmentos - dados
+                    segmento_env.tam_buffer = sizeof (segmento_env) - TAM_MAX_BUFFER; // Tamanho de segmentos - dados
                     segmento_env.flag_connect = 1;
                     segmento_env.flag_ack = -1;
                     segmento_env.flag_syn = -1;
@@ -260,14 +278,15 @@ void *enviarSegmentos() {
             printf("[TRANS - ENV] tam_buffer = '%d'\n", buffer_trans_rede_env.tam_buffer);
 #endif
 
-            /* Produzir buffer_trans_rede_env */
+            // Produzir buffer_trans_rede_env
             pthread_mutex_unlock(&mutex_trans_rede_env2);
 
+            // Anda com o nextseqnum
             nextseqnum += TAM_SEGMENT;
 
         }
 
-
+            // Recebi um sinal de ack ou de syn
             if (ack != -1 || syn == 1)
             {
 
@@ -279,12 +298,13 @@ void *enviarSegmentos() {
                 pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
             }
 
-            /* Produzir buffer_trans_rede_env */
+            // Produzir buffer_trans_rede_env
             pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
             // Se o timer nao estourou, anda com a janela
             if (ack != -1) {
 
+            // Anda com a janela
             base = ack;
 
             #ifdef DEBBUG
@@ -302,13 +322,14 @@ void *enviarSegmentos() {
 #ifdef DEBBUG
             printf("[TRANS - ENV] Recebi um pacote de syn\n");
 #endif
+        printf("Conexão estabelecida com sucesso!\n");
 
         } else {
 
 #ifdef DEBBUG
             printf("[TRANS - ENV] Thread de timer estourou. Reenviando Janela\n");
 #endif
-
+            // Reenvia Janela
             nextseqnum = base;
 
         }
@@ -323,7 +344,7 @@ void *receberSegmentos() {
 
         struct segmento segmento_rcv;
 
-        /* Consumir buffer_trans_rede_rcv */
+        // Consumir buffer_trans_rede_rcv
         pthread_mutex_lock(&mutex_trans_rede_rcv2);
 
         #ifdef DEBBUG_TRANSPORTE
@@ -333,37 +354,26 @@ void *receberSegmentos() {
 
         #endif
 
-        /* Retira segmento do buffer */
-        retirarSegmentoBufferTransRedeRcv(&segmento_rcv);
+            // Retira segmento do buffer
+            retirarSegmentoBufferTransRedeRcv(&segmento_rcv);
 
-
-        #ifdef DEBBUG_TRANSPORTE_FLAGS
-
-        printf("[TRANS - RCV] segmento_rcv.flag_ack: '%d'\n", segmento_rcv.flag_ack);
-        printf("[TRANS - RCV] segmento_rcv.flag_syn: '%d'\n", segmento_rcv.flag_syn);
-        printf("[TRANS - RCV] segmento_rcv.flag_connect: '%d'\n", segmento_rcv.flag_connect);
-        printf("[TRANS - RCV] segmento_rcv.flag_push: '%d'\n\n", segmento_rcv.flag_push);
-        printf("[TRANS - RCV] segmento_rcv.ack: '%d'\n\n", segmento_rcv.ack);
-        printf("[TRANS - RCV] segmento_rcv.num_no: '%d'\n", segmento_rcv.num_no);
-        printf("[TRANS - RCV] segmento_rcv.env_no: '%d'\n", segmento_rcv.env_no);
-
-        #endif
-
-        /* Consumir buffer_trans_rede_rcv */
+        // Consumir buffer_trans_rede_rcv
         pthread_mutex_unlock(&mutex_trans_rede_rcv1);
 
+        /* Se for Segmento de ACK, envia ACK */
         if (segmento_rcv.flag_ack == 1) {
 
             ack = segmento_rcv.ack;
 
+        /* Se for Segmento de SYN, envia SYN */
         } else if (segmento_rcv.flag_syn == 1) {
 
             syn = 1;
 
+        /* Se for Segmento de CONNECT, envia SYN ao nó de origem */
         } else if (segmento_rcv.flag_connect == 1) {
 
             struct segmento segmento_env_ack;
-
 
         #ifdef DEBBUG
 
@@ -379,13 +389,23 @@ void *receberSegmentos() {
             segmento_env_ack.num_no = segmento_rcv.env_no;
             segmento_env_ack.env_no = segmento_rcv.num_no;
 
-            /* Produzir buffer_trans_rede_env */
+            // Produzir buffer_trans_rede_env
             pthread_mutex_lock(&mutex_trans_rede_env1);
+
+                #ifdef DEBBUG
+
+                printf("[TRANS - RCV] Enviei um pacote de syn!\n\n");
+
+                #endif
 
                 colocarSegmentoBufferTransRedeEnv(segmento_env_ack);
 
-            /* Produzir buffer_trans_rede_env */
+            // Produzir buffer_trans_rede_env
             pthread_mutex_unlock(&mutex_trans_rede_env2);
+
+        /*  Se for Segmento de Dados, e o expectedseqnum for igual ao numseq recebido, 
+        // coloca o segmento no buffer interno e envia ack do prox. numseq ao nó de origem.
+        */
 
         } else if (segmento_rcv.flag_push == 1) {
 
@@ -417,14 +437,17 @@ void *receberSegmentos() {
                     printf("[TRANS - RCV] Enviando Pacote de ACK: '%d'\n", segmento_env_ack.ack);
                 #endif
 
-                /* Produzir buffer_trans_rede_env */
+                // Produzir buffer_trans_rede_env
                 pthread_mutex_lock(&mutex_trans_rede_env1);
 
                 colocarSegmentoBufferTransRedeEnv(segmento_env_ack);
 
-                /* Produzir buffer_trans_rede_env */
+                // Produzir buffer_trans_rede_env
                 pthread_mutex_unlock(&mutex_trans_rede_env2);
 
+            /*  Se for Segmento de Dados, e o expectedseqnum for diferente do numseq recebido.
+            // descarta segmento recebido.
+            */
 
             } else {
 
@@ -453,14 +476,14 @@ void montarSegmentoAck(struct segmento *segment, struct segmento segment_rcv, in
 
 void colocarPacoteBufferApliTransRcv(struct pacote package) {
 
-    //Colocar no Buffer
+    // Colocar no Buffer
     memcpy(&buffer_apli_trans_rcv.data, &package, sizeof (package));
 
 }
 
 void retirarPacoteBufferApliTransEnv(struct pacote *package, struct ic *ic) {
 
-    //Retirar do Buffer
+    // Retirar do Buffer
     memcpy(ic, &buffer_apli_trans_env.ic , sizeof (buffer_apli_trans_env.ic));
     memcpy(package, &buffer_apli_trans_env.data , sizeof (buffer_apli_trans_env.data));
 
@@ -468,7 +491,7 @@ void retirarPacoteBufferApliTransEnv(struct pacote *package, struct ic *ic) {
 
 void colocarPacoteBufferTransTransEnv(struct pacote package, struct ic ic) {
 
-    //Colocar no Buffer
+    // Colocar no Buffer
     memcpy(&buffer_trans_trans_env.tam_buffer, &buffer_apli_trans_env.tam_buffer, sizeof (int));
     memcpy(&buffer_trans_trans_env.ic, &ic, sizeof (ic));
     memcpy(buffer_trans_trans_env.data, &package, sizeof (package));
@@ -480,7 +503,7 @@ void retirarPacoteBufferTransTransRcv(struct pacote *package) {
     // Retirar do Buffer
     memcpy(package, buffer_trans_trans_rcv.data, sizeof (*package));
 
-    //fwrite (&buffer_trans_trans_rcv.data , 1 , TAM_SEGMENT , stdout);
+    // fwrite (&buffer_trans_trans_rcv.data , 1 , TAM_SEGMENT , stdout);
 
 }
 
@@ -506,6 +529,7 @@ void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum
     segment->seqnum = nextseqnum;
     segment->num_no = file_info.num_no;
     segment->tam_buffer = buffer_trans_trans_env.tam_buffer;
+    memcpy(&(segment->ic), &buffer_trans_trans_env.ic, sizeof (buffer_trans_trans_env.ic));
     memcpy(&(segment->data), ptr, TAM_SEGMENT);
 
 }
@@ -513,7 +537,7 @@ void retirarSegmentoBufferTransTransEnv(struct segmento *segment, int nextseqnum
 
 void colocarSegmentoBufferTransRedeEnv(struct segmento segment){
 
-    //Colocar no Buffer
+    // Colocar no Buffer
     buffer_trans_rede_env.env_no = segment.env_no;
     buffer_trans_rede_env.tam_buffer = segment.tam_buffer;
     memcpy(&buffer_trans_rede_env.data, &segment, sizeof (segment));
@@ -522,7 +546,19 @@ void colocarSegmentoBufferTransRedeEnv(struct segmento segment){
 
 void retirarSegmentoBufferTransRedeRcv(struct segmento *segment) {
 
-    //Retirar do Buffer
+    // Retirar do Buffer
     memcpy(segment, &buffer_trans_rede_rcv.data, sizeof (buffer_trans_rede_rcv.data));
+
+    #ifdef DEBBUG_TRANSPORTE_FLAGS
+
+    printf("[TRANS - RCV] segmento_rcv.flag_ack: '%d'\n", segmento_rcv.flag_ack);
+    printf("[TRANS - RCV] segmento_rcv.flag_syn: '%d'\n", segmento_rcv.flag_syn);
+    printf("[TRANS - RCV] segmento_rcv.flag_connect: '%d'\n", segmento_rcv.flag_connect);
+    printf("[TRANS - RCV] segmento_rcv.flag_push: '%d'\n\n", segmento_rcv.flag_push);
+    printf("[TRANS - RCV] segmento_rcv.ack: '%d'\n\n", segmento_rcv.ack);
+    printf("[TRANS - RCV] segmento_rcv.num_no: '%d'\n", segmento_rcv.num_no);
+    printf("[TRANS - RCV] segmento_rcv.env_no: '%d'\n", segmento_rcv.env_no);
+
+    #endif
 
 }

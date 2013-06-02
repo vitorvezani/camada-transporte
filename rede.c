@@ -394,7 +394,9 @@ void atualizarTabelaRotas(struct datagrama datagram) {
     /* Salva quem enviou para não enviar para esse nó*/
     tabela_rotas[1].quem_enviou = datagram.num_no;
 
+    #ifdef DEBBUG
     printf("[REDE - ROT]Recebi tabela de rotas do nó '%d'\n", tabela_rotas[1].quem_enviou);
+    #endif
 
     for (i = 0; i < 6; i++) {
 
@@ -435,7 +437,9 @@ void enviarTabelaRotasVizinhos(struct datagrama *datagram) {
             datagram->env_no = nos_vizinhos[i];
             datagram->num_no = file_info.num_no;
 
+            #ifdef DEBBUG
             printf("[REDE - ROT]Enviei Tabela de Rotas para o nó '%d'\n", nos_vizinhos[i]);
+            #endif
 
             colocarDatagramaBufferRedeRedeEnv(*datagram);
 
@@ -510,18 +514,25 @@ void fragmentarDatagramaEnv(struct datagrama datagram) {
 
     void *ptr = buffer_interno;
 
+#ifdef DEBBUG
     printf("[REDE - FRAG] MTU excedido dividindo o pacote em max '%d' bytes\n\n", MTU);
-
+#endif
     /* Se o ultimo datagrama tiver resto */
     if (tam_total_datagrama % MTU != 0) {
         qtde_divisao = (tam_total_datagrama) / MTU + 1;
         tam_parte_final = (tam_total_datagrama) % MTU;
+        #ifdef DEBBUG_REDE_FRAGMENTAR
         printf("[REDE - FRAG] Tamanho total : '%d'.Dividirei em '%d' partes\n", (tam_total_datagrama), qtde_divisao);
+        #endif
     }/* Se o ultimo datagrama não tiver resto */
     else {
         qtde_divisao = tam_total_datagrama / MTU;
         tam_parte_final = 0;
+
+        #ifdef DEBBUG_REDE_FRAGMENTAR
         printf("[REDE - FRAG] Tamanho total : '%d'.Dividirei o datagrama em '%d' partes\n", (tam_total_datagrama), qtde_divisao);
+        #endif
+
     }
 
     /* Loop para mandar os fragmentos dos datagramas*/
@@ -534,7 +545,9 @@ void fragmentarDatagramaEnv(struct datagrama datagram) {
         datagrama_env_aux.retorno = retorno;
         datagrama_env_aux.id = flag_id;
 
+        #ifdef DEBBUG_REDE_FRAGMENTAR
         printf("[REDE - FRAG] Offset: '%d'\n", datagrama_env_aux.offset);
+        #endif
 
         /* Primeiro e Demais pacotes (exceto ultimo) */
         if (i + 1 != qtde_divisao) {

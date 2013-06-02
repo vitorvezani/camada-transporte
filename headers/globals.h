@@ -48,7 +48,7 @@
 //#define DEBBUG_REDE_DESFRAGMENTAR
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
-//#define DEBBUG_TRANSPORTE
+#define DEBBUG_TRANSPORTE
 //#define DEBBUG_TRANSPORTE_FLAGS
 #define DEBBUG
 
@@ -62,6 +62,7 @@ int ps[10];             // Estrutura do PS
 int ic[10];             // Estrutura contendo os IC do nó
 int ack;                // Ack
 int syn;                // Sync
+int ic_num;             // Numero para controle de ICs
 
 pthread_mutex_t mutex_rede_enlace_env1, mutex_rede_enlace_env2;
 pthread_mutex_t mutex_rede_enlace_rcv1, mutex_rede_enlace_rcv2;
@@ -115,6 +116,7 @@ struct buffer_trans_trans {
 
 /* Estrutura do segmento */
 struct segmento {
+    struct ic ic;
     int flag_ack;
     int flag_connect;
     int flag_syn;
@@ -233,7 +235,6 @@ void *receberPacote();
 void *timer();
 
 //Threads da Camada de Aplicação 
-void *enviarPacotes();
 void *receberPacotes();
 
 //Funções Arquivos
