@@ -270,8 +270,9 @@ void *receberDatagramas() {
             /* Produzir buffer_rede_rede_env */
             pthread_mutex_lock(&mutex_rede_rede_env1);
 
-            printf("[REDE - RECEBER]Repassando datagrama nó dts: '%d', nó inicial: '%d'!\n", datagrama_rcv.env_no, datagrama_rcv.num_no);
-
+#ifdef DEBBUG
+            printf("[REDE - RCV]Repassando datagrama nó dts: '%d', nó inicial: '%d'!\n", datagrama_rcv.env_no, datagrama_rcv.num_no);
+#endif
             colocarDatagramaBufferRedeRedeEnv(datagrama_rcv);
 
             /* Produzir buffer_rede_rede_env */
@@ -643,16 +644,21 @@ void retirarDatagramaBufferRedeEnlaceRcv(struct datagrama *datagram) {
 
         memcpy(datagram, &buffer_rede_enlace_rcv.data, sizeof (buffer_rede_enlace_rcv.data));
 
-        printf("[REDE - RECEBER] Datagrama Recebido com sucesso!\n");
+#ifdef DEBBUG
+        printf("[REDE - RCV] Datagrama Recebido com sucesso!\n");
+#endif
 
 #ifdef DEBBUG_REDE
-        printf("[REDE - RECEBER] Type: '%d', Tam_buffer: '%d' Bytes, ID: '%d', offset: '%d', MF: '%d'\n", datagram->type, datagram->tam_buffer,
+        printf("[REDE - RCV] Type: '%d', Tam_buffer: '%d' Bytes, ID: '%d', offset: '%d', MF: '%d'\n", datagram->type, datagram->tam_buffer,
                 datagram->id, datagram->offset, datagram->mf);
 #endif
 
-    } else
-        printf("[REDE - RECEBER] ECC não correspondente - Datagrama Descartado\n");
+    } else{
 
+    #ifdef DEBBUG
+        printf("[REDE - RCV] ECC não correspondente - Datagrama Descartado\n");
+    #endif
+    }
 }
 
 void retirarSegmentoBufferTransRedeEnv(struct datagrama *datagram) {
@@ -682,15 +688,21 @@ int retornoEnlace() {
 
         /* Testa o retorno da camada de enlace */
         if (buffer_rede_enlace_env.retorno == 0) {
-            printf("[REDE - ENVIAR] OK\n\n");
+            #ifdef DEBBUG
+            printf("[REDE - ENV] OK\n\n");
+            #endif
         } else if (buffer_rede_enlace_env.retorno == -1) {
-            printf("[REDE - ENVIAR] Não há ligacao do nó: '%d'!\n\n", buffer_rede_enlace_env.env_no);
+            #ifdef DEBBUG
+            printf("[REDE - ENV] Não há ligacao do nó: '%d'!\n\n", buffer_rede_enlace_env.env_no);
+            #endif
             return -1;
         } else if (buffer_rede_enlace_env.retorno > 0) {
-            printf("[REDE - ENVIAR] MTU Excedido MAX '%d'\n", buffer_rede_enlace_env.retorno);
+            #ifdef DEBBUG
+            printf("[REDE - ENV] MTU Excedido MAX '%d'\n", buffer_rede_enlace_env.retorno);
+            #endif
             return buffer_rede_enlace_env.retorno;
         } else {
-            printf("[REDE - ENVIAR] Erro Fatal(1)\n\n");
+            printf("[REDE - ENV] Erro Fatal(1)\n\n");
             exit(1);
         }
     return 0;

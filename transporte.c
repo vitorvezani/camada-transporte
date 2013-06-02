@@ -15,8 +15,8 @@ void *iniciarTransporte() {
     int tes, trs, tea, tra, tt;
     pthread_t threadEnviarSegmentos, threadReceberSegmentos, threadEnviarPacote, threadReceberPacote, threadTimer;
 
-    ack = -1;
-    syn = -1;
+
+    buffer_trans_trans_rcv.data = (char *) malloc(sizeof (TAM_BUFFER_TRANS));
 
     //Inicia a thread enviarSegmentos
     tes = pthread_create(&threadEnviarSegmentos, NULL, enviarSegmentos, NULL);
@@ -100,7 +100,16 @@ void *receberPacote() {
         if (buffer_apli_trans_env.tipo == CONECTAR) {
 
             // Alocar Buffer
-            buffer_apli_trans_env.retorno = (char *) malloc(sizeof (TAM_BUFFER_TRANS));
+            buffer_trans_trans_env.data = (char *) malloc(sizeof (TAM_BUFFER_TRANS));
+            buffer_apli_trans_env.retorno = buffer_trans_trans_env.data;
+
+            /* Produzir buffer_trans_trans_env */
+            pthread_mutex_lock(&mutex_trans_trans_env1);
+
+               colocarPacoteBufferTransTransEnv(pacote_env, ic);
+
+            /* Produzir buffer_trans_trans_env */
+             pthread_mutex_unlock(&mutex_trans_trans_env2);
 
         } else if (buffer_apli_trans_env.tipo == DESCONECTAR) {
 
@@ -132,7 +141,7 @@ void *timer() {
     printf("[TRANS - TIMER] Iniciei a Thread Timer!!\n");
 #endif
 
-    sleep(3);
+    sleep(1);
 
     // Acorda a thread de enviar segmento
     pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
@@ -145,37 +154,48 @@ void *timer() {
 
 void *enviarSegmentos() {
 
-    int first_pkg;
-    int tt;
+    int first_pkg, tt;
     pthread_t threadTimer;
+
+    int tipo;
 
     int base = 0;
     int nextseqnum = 0;
+    ack = -1;
+    syn = -1;
+
 
     /* Consumir buffer_trans_trans_env */
     pthread_mutex_lock(&mutex_trans_trans_env2);
 
-    while (TRUE) {
+    while (TRUE){
 
         // Dados a ser considerado
-        if (base       >= sizeof (buffer_trans_trans_env) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer) && 
-            nextseqnum >= sizeof (buffer_trans_trans_env) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer))
+        if (base > (sizeof (buffer_trans_trans_env) + TAM_BUFFER_TRANS) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer) ||
+            syn == 1)
         {
 
         #ifdef DEBBUG_TRANSPORTE
-        printf("[TRANS - ENV FIM DA JANELA] sizeof(buffer): '%zd', base final: '%d', nextseqnum final: '%d'\n", sizeof (buffer_trans_trans_env) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer), base, nextseqnum);
+        printf("[TRANS - ENV FIM DA JANELA] sizeof(buffer): '%zd', base final: '%d', nextseqnum final: '%d'\n", (sizeof (buffer_trans_trans_env) + TAM_BUFFER_TRANS) - (TAM_BUFFER_TRANS - buffer_trans_trans_env.tam_buffer), base, nextseqnum);
         #endif
+
+        //Reinicialização das variaveis
+        base = 0;
+        nextseqnum = 0;
+        ack = -1;
+        syn = -1;
 
         /* Consumir buffer_trans_trans_env */
         pthread_mutex_lock(&mutex_trans_trans_env2);
 
         }
 
+        tipo = buffer_apli_trans_env.tipo;
+
         #ifdef DEBBUG_TRANSPORTE
             printf("----------------------------------------------------------------------\n");
             printf("[TRANS - ENV] Vou enviar a Janela\n");
         #endif
-
 
         //Inicia a thread timer
         tt = pthread_create(&threadTimer, NULL, timer, NULL);
@@ -204,26 +224,40 @@ void *enviarSegmentos() {
 
             // Envia os segmentos da janela
 
-            segmento_env.flag_ack = -1;
-            segmento_env.flag_connect = -1;
-            segmento_env.flag_syn = -1;
+            switch(tipo){
+                case CONECTAR:
+                    segmento_env.tam_buffer = sizeof (segmento_env) - TAM_MAX_BUFFER; //Tamanho de segmentos - dados
+                    segmento_env.flag_connect = 1;
+                    segmento_env.flag_ack = -1;
+                    segmento_env.flag_syn = -1;
+                    segmento_env.flag_push = -1;
+                    break;
+                case DADOS:
+                    segmento_env.flag_push = 1;
+                    segmento_env.flag_ack = -1;
+                    segmento_env.flag_connect = -1;
+                    segmento_env.flag_syn = -1;
+                    break;
+                default:
+                    printf("erro fatal\n");
+                    exit(1);
+                    break;
+            }
 
-            segmento_env.flag_push = 1;
             segmento_env.num_no = file_info.num_no;
-            segmento_env.env_no = buffer_apli_trans_env.env_no; //LOGICA A SER MUDADA
+            segmento_env.env_no = buffer_trans_trans_env.ic.env_no;
 
             colocarSegmentoBufferTransRedeEnv(segmento_env);
 
 #ifdef DEBBUG_TRANSPORTE
-
             printf("[TRANS - ENV] Mandei um Segmento\n");
 #endif
 
 #ifdef DEBBUG_TRANSPORTE_FLAGS
             printf("[TRANS - ENV] flag_push = '%d'\n", segmento_env.flag_push);
+            printf("[TRANS - ENV] flag_connect = '%d'\n", segmento_env.flag_connect);
             printf("[TRANS - ENV] env_no = '%d'\n", segmento_env.env_no);
             printf("[TRANS - ENV] tam_buffer = '%d'\n", buffer_trans_rede_env.tam_buffer);
-
 #endif
 
             /* Produzir buffer_trans_rede_env */
@@ -232,51 +266,52 @@ void *enviarSegmentos() {
             nextseqnum += TAM_SEGMENT;
 
         }
-        printf("locked\n");
 
-        /* Produzir buffer_trans_rede_env */
-        pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
 
-            printf("unlocked\n");
+            if (ack != -1 || syn == 1)
+            {
 
-#ifdef DEBBUG_TRANSPORTE
-        if (ack != -1 || syn == 1)
-            printf("[TRANS - ENV] Desbloquei pelo ack ou syn!!\n");
-        else
-            printf("[TRANS - ENV] Desbloquei pelo Timer!!\n");
-#endif
+                printf("[TRANS - ENV] ack: '%d', syn: '%d'\n", ack, syn);
 
-        // Se o timer nao estourou, anda com a janela
-        if (ack != -1) {
+                pthread_cancel(threadTimer);
+
+                // Produzir buffer_trans_trans_rcv
+                pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
+            }
+
+            /* Produzir buffer_trans_rede_env */
+            pthread_mutex_lock(&env_seg_rcv_seg_timer_2);
+
+            // Se o timer nao estourou, anda com a janela
+            if (ack != -1) {
 
             base = ack;
 
-#ifdef DEBBUG_TRANSPORTE
-
+            #ifdef DEBBUG
             printf("[TRANS - ENV] Recebi um pacote de ack: '%d'\n", ack);
+            #endif
+
+            #ifdef DEBBUG_TRANSPORTE
             printf("[TRANS - ENV] Andei com a janela: '%d'\n", base);
-#endif
+            #endif
 
             ack = -1;
 
         } else if (syn == 1) {
 
-#ifdef DEBBUG_TRANSPORTE
+#ifdef DEBBUG
             printf("[TRANS - ENV] Recebi um pacote de syn\n");
 #endif
-           syn = -1;
 
         } else {
 
-#ifdef DEBBUG_TRANSPORTE
+#ifdef DEBBUG
             printf("[TRANS - ENV] Thread de timer estourou. Reenviando Janela\n");
 #endif
 
             nextseqnum = base;
 
         }
-        pthread_cancel(threadTimer);
-        printf("else bla bla bla\n");
     }
 }
 
@@ -321,19 +356,20 @@ void *receberSegmentos() {
 
             ack = segmento_rcv.ack;
 
-            // Produzir buffer_trans_trans_rcv
-            pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
-
         } else if (segmento_rcv.flag_syn == 1) {
 
             syn = 1;
 
-            // Produzir buffer_trans_trans_rcv
-            pthread_mutex_unlock(&env_seg_rcv_seg_timer_2);
-
         } else if (segmento_rcv.flag_connect == 1) {
 
             struct segmento segmento_env_ack;
+
+
+        #ifdef DEBBUG
+
+                printf("[TRANS - RCV] Recebi um segmento de connect!\n\n");
+
+        #endif
 
             segmento_env_ack.flag_ack = -1;
             segmento_env_ack.flag_push = -1;
@@ -346,7 +382,7 @@ void *receberSegmentos() {
             /* Produzir buffer_trans_rede_env */
             pthread_mutex_lock(&mutex_trans_rede_env1);
 
-            colocarSegmentoBufferTransRedeEnv(segmento_env_ack);
+                colocarSegmentoBufferTransRedeEnv(segmento_env_ack);
 
             /* Produzir buffer_trans_rede_env */
             pthread_mutex_unlock(&mutex_trans_rede_env2);
@@ -377,7 +413,7 @@ void *receberSegmentos() {
 
                 montarSegmentoAck(&segmento_env_ack, segmento_rcv, expectedseqnum);
 
-                #ifdef DEBBUG_TRANSPORTE
+                #ifdef DEBBUG
                     printf("[TRANS - RCV] Enviando Pacote de ACK: '%d'\n", segmento_env_ack.ack);
                 #endif
 
@@ -392,11 +428,9 @@ void *receberSegmentos() {
 
             } else {
 
-                #ifdef DEBBUG_TRANSPORTE
-
-                printf("[TRANS - RCV] SeqNum('%d') recebido != ExpectedSeqNum('%d')\n", segmento_rcv.seqnum, expectedseqnum);
+                #ifdef DEBBUG
+                printf("[TRANS - RCV] SeqNum('%d') != ExpectedSeqNum('%d')\n", segmento_rcv.seqnum, expectedseqnum);
                 printf("[TRANS - RCV] Pacote Descartado !\n\n");
-
                 #endif
 
             }

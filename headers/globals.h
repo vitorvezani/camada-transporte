@@ -29,7 +29,7 @@
 
 #define TAM_MAX_BUFFER      2000
 
-#define TAM_SEGMENT         10
+#define TAM_SEGMENT         50
 #define TAM_JANELA          TAM_SEGMENT * 4
 #define TAM_BUFFER_TRANS    6000
 
@@ -48,8 +48,9 @@
 //#define DEBBUG_REDE_DESFRAGMENTAR
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
-#define DEBBUG_TRANSPORTE
+//#define DEBBUG_TRANSPORTE
 //#define DEBBUG_TRANSPORTE_FLAGS
+#define DEBBUG
 
 // Variaveis Globais
 
@@ -83,14 +84,14 @@ struct ic {
     int env_no;
     int num_no;
     int ps;
-    char * end_buffer;
+    char *end_buffer;
 };
 
 /* Estrutura do pacote */
 struct pacote {
     int tipo;
     int tam_buffer;
-    char * retorno;
+    char *retorno;
     char buffer[TAM_MAX_BUFFER];
 };
 
@@ -100,7 +101,7 @@ struct buffer_apli_trans {
     int tam_buffer;
     int tipo;
     int env_no;
-    char * retorno;
+    char *retorno;
     struct pacote data;
 
 };
@@ -109,7 +110,7 @@ struct buffer_apli_trans {
 struct buffer_trans_trans {
     int tam_buffer;
     struct ic ic;
-    char data[TAM_BUFFER_TRANS];
+    char *data;
 };
 
 /* Estrutura do segmento */

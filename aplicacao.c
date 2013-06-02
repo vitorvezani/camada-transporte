@@ -124,6 +124,10 @@ struct ic conectar(int env_no, int num_ps) {
 
         pacote_env.tipo = CONECTAR;
 
+        ic.env_no     = env_no;
+        ic.ps         = num_ps;
+        ic.num_no     = file_info.num_no;
+
         colocarPacotesBufferApliTransEnv(pacote_env, ic);
 
         /* Produzir buffer_rede_enlace_env */
@@ -138,9 +142,6 @@ struct ic conectar(int env_no, int num_ps) {
         pthread_mutex_unlock(&mutex_apli_trans_env1);
 
         ic.end_buffer = pacote_env.retorno;
-        ic.env_no     = env_no;
-        ic.ps         = num_ps;
-        ic.num_no     = file_info.num_no;
 
         return ic;
 
