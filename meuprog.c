@@ -19,6 +19,9 @@ int main(int argc, char const *argv[]) {
 
     int env_no = 3;
 
+    char cmd[128];
+    char *ptrFuncao, *ptrParam1, *ptrParam2;
+
     struct ic ic, ic2;
 
     int ps, ps2;
@@ -44,17 +47,68 @@ int main(int argc, char const *argv[]) {
 
     usleep(20000);
 
-if (file_info.num_no == 1)
-{
+    printf("Funções Disponíveis:\n  -'aps()'\n  -'fps()'\n  -'conectar()'\n  -'desconectar()'\n  -'baixar()'\n");
+    printf("Digite a função e os respectivos parametros\n");
 
+while (TRUE){
+
+    printf("$ ");
+    fgets(cmd , 127 , stdin);
+    cmd[strlen(cmd)-1]='\0';
+
+    ptrFuncao = strtok(cmd," ");
+
+    if(strcasecmp(ptrFuncao,"aps") == 0)
+    {
+        ps = aps();
+
+        if (ps == -1)
+            printf("Impossivel criar ps\n");
+        else
+            printf("ps criado '%d'\n", ps);
+
+    }else if(strcasecmp(ptrFuncao,"fps") == 0)
+    {
+        int fpsRet = 0;
+
+        ptrParam1 = strtok(NULL," ");
+
+        fpsRet = fps(atoi(ptrParam1));
+
+        if (fpsRet == 1)
+            printf("ps fechado!\n");
+        else
+            printf("ps '%d' não existente\n",atoi(ptrParam1));
+        
+    }else if(strcasecmp(ptrFuncao,"conectar") == 0)
+    {
+
+        ptrParam1 = strtok(NULL," ");
+        ptrParam2 = strtok(NULL," ");
+
+        printf("conectar %d %d\n",atoi(ptrParam1), atoi(ptrParam2));
+
+    }else if(strcasecmp(ptrFuncao,"desconectar") == 0)
+    {
+
+        ptrParam1 = strtok(NULL," ");
+
+        printf("desconectar %d\n", atoi(ptrParam1));
+
+    }else if(strcasecmp(ptrFuncao,"baixar") == 0)
+    {
+
+        ptrParam1 = strtok(NULL," ");
+        ptrParam2 = strtok(NULL," ");
+
+        printf("baixar %d %s\n",atoi(ptrParam1), ptrParam2);
+
+    }else
+        printf("opção invalida!\n");
+
+/*
     getchar();
 
-    ps = aps();
-
-    if (ps == -1)
-        printf("Impossivel criar ps\n");
-    else
-        printf("ps criado '%d'\n", ps);
 
     getchar();
 
@@ -96,9 +150,9 @@ if (file_info.num_no == 1)
     getchar();
 
     desconectar(ic2);
+*/
 
 }
-
     /* Espera a Thread terminar */
     pthread_join(threadinicializarCamadas, NULL);
 

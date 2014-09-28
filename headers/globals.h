@@ -48,9 +48,9 @@
 //#define DEBBUG_REDE_DESFRAGMENTAR
 //#define DEBBUG_MONTAR_TABELA
 //#define DEBBUG_ROTEAMENTO
-#define DEBBUG_TRANSPORTE
+//#define DEBBUG_TRANSPORTE
 //#define DEBBUG_TRANSPORTE_FLAGS
-#define DEBBUG
+//#define DEBBUG
 
 // Variaveis Globais
 
